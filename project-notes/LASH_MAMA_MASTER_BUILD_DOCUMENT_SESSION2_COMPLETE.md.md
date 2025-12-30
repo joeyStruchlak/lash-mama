@@ -1,16 +1,16 @@
 # LASH MAMA - MASTER BUILD DOCUMENT (UPDATED)
 ## Complete Progress & Continuation Guide
 
-**Status**: Phase 2 - UI Development COMPLETE ✅
+**Status**: Phase 3 - Backend Integration IN PROGRESS ✅
 **Developer**: Joey Struchlak
 **GitHub**: https://github.com/joeyStruchlak/lash-mama
-**Last Updated**: December 30, 2025 - Session 2 Complete
+**Last Updated**: December 31, 2025 - Session 3 - Backend Connected
 
 ---
 
 ## 📊 PROJECT STATUS OVERVIEW
 
-### ✅ COMPLETED (Phase 1 + Phase 2)
+### ✅ COMPLETED (Phase 1 + Phase 2 + Phase 3 Partial)
 
 **Phase 1: Foundation** ✅
 - [x] GitHub repository created & configured
@@ -30,38 +30,35 @@
 - [x] **Header/Navigation** - Logo, menu, responsive hamburger
 - [x] **Services Page** - 8 categories, expandable services, pricing
 - [x] **4-Step Booking Flow** - Service → Artist → Date/Time → Confirm
-  - Step 1: Service selection
-  - Step 2: Staff/Artist selection with price multipliers
-  - Step 3: Date & time picker
-  - Step 4: Confirmation with total price & Afterpay info
 - [x] **VIP Dashboard** - Gamification with 4 tabs
-  - Overview: Stats, tier progress, achievements
-  - Booking History: Past appointments
-  - Rewards: Redeemable rewards with points
-  - Notes: Personal reminders section
 - [x] **Gallery Page** - Before/after lash transformations
-  - Grid layout with category filtering
-  - Lightbox modal with testimonials
-  - Artist attribution
 - [x] **Courses Page** - 6 course offerings
-  - VIP Vogue (premium), Platinum, Silver, Gold, DIY Makeup, Masterclass
-  - Level filtering, detailed modal view
-  - "Enroll Now" CTA
 - [x] **Shop Preview** - 4 featured products
-  - Links to external Shopify store
-  - Simple, clean gallery preview
-  - "View on Shopify" buttons
+
+**Phase 3: Backend Integration** 🔄 IN PROGRESS
+- [x] Database schema created (8 tables)
+- [x] SQL migrations created
+- [x] Seed data inserted (staff, services, courses, gallery)
+- [x] Supabase client library installed & configured
+- [x] Environment variables set up
+- [x] **Services Page** connected to database ✅
+- [x] **Booking Flow** connected to database ✅
+- [x] **Courses Page** connected to database ✅
+- [x] **Gallery Page** connected to database ✅
+- [ ] VIP Dashboard connected to database
+- [ ] User authentication (Supabase Auth)
+- [ ] Save bookings to database
+- [ ] Payment processing (Stripe)
 
 ---
 
-### 🔄 IN PROGRESS (Phase 3: Backend)
+### 🔄 IN PROGRESS (Phase 3 Remaining)
 
-- [ ] Supabase database schema & migrations
-- [ ] User authentication (Supabase Auth)
-- [ ] Connect booking flow to real data
-- [ ] Connect VIP dashboard to database
-- [ ] API integration & data fetching
-- [ ] Payment processing (Stripe integration)
+- [ ] VIP Dashboard → real user data
+- [ ] User authentication (signup/login)
+- [ ] Protected routes
+- [ ] Save appointments to database
+- [ ] Payment integration (Stripe)
 - [ ] Admin dashboard
 
 ---
@@ -77,127 +74,84 @@
 
 ---
 
-## 🏗️ COMPLETE REPOSITORY STRUCTURE
+## 🗄️ DATABASE SCHEMA (COMPLETE)
 
+### Tables Created ✅
+1. **users** - User profiles (extends Supabase auth)
+2. **staff** - 3 artists (Purni, Nikki & Beau, Natali)
+3. **services** - 11 services across categories
+4. **appointments** - Booking records
+5. **vip_profiles** - Loyalty/gamification data
+6. **courses** - 6 course offerings
+7. **gallery_items** - 3 before/after transformations
+8. **achievements** - User achievements
+
+### Sample Data Inserted ✅
+- ✅ 3 staff members with tiers & multipliers
+- ✅ 11 services (Mega Volume, Volume, Natural/Hybrid, etc.)
+- ✅ 6 courses (VIP Vogue, Platinum, Silver, Gold, DIY, Masterclass)
+- ✅ 3 gallery items with before/after images
+
+---
+
+## 🔗 PAGES CONNECTED TO DATABASE
+
+| Page | Route | Database Connection | Status |
+|------|-------|---------------------|--------|
+| Home | `/` | N/A (static) | ✅ |
+| Services | `/services` | ✅ Loads from `services` table | ✅ |
+| Book | `/book` | ✅ Loads `services` + `staff` tables | ✅ |
+| VIP | `/vip` | ❌ Still using mock data | ⏳ TODO |
+| Gallery | `/gallery` | ✅ Loads from `gallery_items` + `staff` | ✅ |
+| Courses | `/courses` | ✅ Loads from `courses` + `staff` | ✅ |
+| Shop | `/shop` | N/A (static products) | ✅ |
+
+---
+
+## 🏗️ COMPLETE REPOSITORY STRUCTURE
 ```
 lash-mama/
-├── .github/
-│   └── workflows/           (CI/CD pipelines - TODO)
-│
 ├── apps/
-│   ├── web/                 ✅ COMPLETE
-│   │   ├── src/
-│   │   │   ├── app/
-│   │   │   │   ├── layout.tsx          (Root layout with Header)
-│   │   │   │   ├── page.tsx            (Home page - ✅ DONE)
-│   │   │   │   ├── globals.css
-│   │   │   │   ├── book/
-│   │   │   │   │   ├── page.tsx        (Booking flow - ✅ DONE)
-│   │   │   │   │   └── BookingWizard.tsx (4-step wizard)
-│   │   │   │   ├── services/
-│   │   │   │   │   └── page.tsx        (Services - ✅ DONE)
-│   │   │   │   ├── vip/
-│   │   │   │   │   └── page.tsx        (VIP dashboard - ✅ DONE)
-│   │   │   │   ├── gallery/
-│   │   │   │   │   └── page.tsx        (Gallery - ✅ DONE)
-│   │   │   │   ├── courses/
-│   │   │   │   │   └── page.tsx        (Courses - ✅ DONE)
-│   │   │   │   └── shop/
-│   │   │   │       └── page.tsx        (Shop preview - ✅ DONE)
-│   │   │   └── components/
-│   │   │       ├── Header.tsx          (Navigation - ✅ DONE)
-│   │   │       ├── Button.tsx          (Reusable button)
-│   │   │       ├── Card.tsx            (Reusable card)
-│   │   │       └── BookingWizard.tsx   (Booking component)
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   │   ├── tailwind.config.ts          (Custom theme ✅)
-│   │   ├── postcss.config.js
-│   │   ├── next.config.js
-│   │   └── node_modules/
-│   │
-│   ├── mobile/              (TODO: React Native + Expo)
-│   └── api/                 (TODO: Supabase Edge Functions)
+│   └── web/
+│       ├── src/
+│       │   ├── app/
+│       │   │   ├── page.tsx (Home)
+│       │   │   ├── services/page.tsx ✅ CONNECTED
+│       │   │   ├── book/page.tsx ✅ CONNECTED
+│       │   │   ├── vip/page.tsx (TODO: connect)
+│       │   │   ├── gallery/page.tsx ✅ CONNECTED
+│       │   │   ├── courses/page.tsx ✅ CONNECTED
+│       │   │   ├── shop/page.tsx
+│       │   │   └── test/page.tsx (database test page)
+│       │   ├── components/
+│       │   │   ├── Header.tsx
+│       │   │   ├── Button.tsx
+│       │   │   ├── Card.tsx
+│       │   │   └── BookingWizard.tsx ✅ CONNECTED
+│       │   └── lib/
+│       │       └── supabase.ts ✅ CLIENT CONFIGURED
+│       └── .env.local ✅ CONFIGURED
+│
+├── supabase/
+│   └── migrations/
+│       └── 20251231000001_initial_schema.sql ✅ CREATED
 │
 ├── packages/
-│   ├── config/              ✅ COMPLETE
-│   ├── types/               ✅ COMPLETE
-│   ├── ui/                  (TODO: Shared component library)
-│   ├── api-client/          (TODO: Supabase client)
-│   └── utils/               (TODO: Shared utilities)
+│   ├── config/ ✅
+│   └── types/ ✅
 │
-├── scripts/                 (TODO: Setup & automation)
-├── .env.example             ✅ Template
-├── .env.local               ✅ Dev credentials
-├── .env.uat                 ✅ UAT credentials
-├── .eslintrc.json           ✅ Linting config
-├── .gitignore               ✅ Git ignore rules
-├── .prettierrc               ✅ Formatting config
-├── package.json             ✅ Root config
-├── pnpm-workspace.yaml      ✅ Monorepo config
-├── tsconfig.json            ✅ TypeScript config
-├── turbo.json               ✅ Build orchestration
-├── README.md                ✅ Project readme
-├── LICENSE                  ✅ MIT License
-└── node_modules/            (Generated)
+└── node_modules/
 ```
-
----
-
-## 🎨 DESIGN SYSTEM (FULLY IMPLEMENTED)
-
-### Color Palette ✅
-```
-gold-50:  #FAFAF7  (Cream/Off-white)
-gold-100: #F5F2EF  (Light bg)
-gold-500: #C9A871  (Primary gold)
-gold-600: #D4AF37  (Accent/CTA)
-dark:    #2A2A2A  (Text/Headers)
-dark-secondary: #3D3D3D (Secondary text)
-```
-
-### Typography ✅
-- **Display**: Cormorant Garamond (elegant serif)
-- **Body**: Inter (clean sans-serif)
-
-### Components ✅
-- Button (primary, secondary, outline)
-- Card (with hover effects)
-- Header (sticky nav with mobile menu)
-- BookingWizard (4-step flow)
-
----
-
-## 📱 ALL PAGES BUILT
-
-| Page | Route | Status | Features |
-|------|-------|--------|----------|
-| Home | `/` | ✅ | Hero, welcome cards |
-| Services | `/services` | ✅ | 8 categories, expandable, pricing |
-| Book | `/book` | ✅ | 4-step wizard, staff selection, price calc |
-| VIP | `/vip` | ✅ | Gamification, 4 tabs, achievements |
-| Gallery | `/gallery` | ✅ | Before/after, filtering, lightbox |
-| Courses | `/courses` | ✅ | 6 courses, level filter, modal details |
-| Shop | `/shop` | ✅ | 4 featured products, Shopify links |
 
 ---
 
 ## 🔐 ENVIRONMENT & CREDENTIALS
 
-### Development
+### Development (Connected ✅)
 ```
-SUPABASE_URL: https://gcqthaivnyleflvmmxqv.supabase.co
-ANON_KEY: sb_publishable_8mETOC7FNKUCPAMOK7bRhQ_VlD968d7
+NEXT_PUBLIC_SUPABASE_URL=https://gcqthaivnyleflvmmxqv.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcXRoYWl2bnlsZWZsdm1teHF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNzQ0NDUsImV4cCI6MjA4MjY1MDQ0NX0.dc-UDgHjcJZchLwRVeMqQ0ADmQBDAqu6Wxzgz_lTsE4
 ```
-
-### UAT/Staging
-```
-SUPABASE_URL: https://jfjplvriaiapxfmtsmxy.supabase.co
-ANON_KEY: sb_publishable_gUQhXILKkIBd4n7nuPCnOg_sTW5VOL4
-```
-
-### Production
-Status: ⏸️ Not yet created (will create at launch)
 
 ---
 
@@ -210,47 +164,37 @@ npm run dev
 
 App runs at: `http://localhost:3000`
 
-### All Available Routes
-- `/` - Home page
-- `/services` - Services catalog
-- `/book` - Booking wizard
-- `/vip` - VIP dashboard
-- `/gallery` - Before/after gallery
-- `/courses` - Course catalog
-- `/shop` - Shop preview
-
-### Navigation
-All pages are accessible via the Header navigation menu
+### Test Database Connection
+Go to: `http://localhost:3000/test` - Should show green success message
 
 ---
 
-## 📋 WHAT'S NEXT (Phase 3 - Backend)
+## 📋 WHAT'S NEXT (Immediate Priority)
 
-### Priority 1: Database Schema
-Create Supabase migrations for:
-- Users table
-- Services table
-- Staff table
-- Appointments table
-- Payments table
-- VIP profiles table
-- Gallery items table
+### Phase 3 Remaining Tasks:
 
-### Priority 2: Authentication
-- Supabase Auth setup
-- Login/signup pages
-- Protected routes
+1. **Connect VIP Dashboard** to real data
+   - User VIP profiles
+   - Points & tier tracking
+   - Booking history from appointments table
+   - Achievements
 
-### Priority 3: API Integration
-- Create Supabase API client
-- Connect booking flow to database
-- Connect VIP dashboard to real data
-- Fetch services from database
+2. **Add User Authentication**
+   - Supabase Auth setup
+   - Login/Signup pages
+   - Protected routes
+   - User sessions
 
-### Priority 4: Payments
-- Stripe integration
-- Payment processing
-- Afterpay support
+3. **Save Bookings**
+   - Insert appointments into database
+   - Connect booking wizard to appointments table
+   - Email confirmations
+
+4. **Payment Integration**
+   - Stripe setup
+   - Payment processing
+   - Deposit handling
+   - Afterpay integration
 
 ---
 
@@ -260,46 +204,50 @@ Create Supabase migrations for:
 |-------|--------|----------|--------------|
 | **1: Foundation** | ✅ COMPLETE | ~3 hrs | Monorepo, config, Supabase setup |
 | **2: UI/Pages** | ✅ COMPLETE | ~5 hrs | 7 pages, navigation, components |
-| **3: Backend** | 🔄 TODO | ~6 hrs | Database, auth, API |
-| **4: Payments** | ⏳ TODO | ~4 hrs | Stripe, payment flow |
-| **5: Mobile** | ⏳ TODO | ~10 hrs | React Native app |
-| **6: DevOps** | ⏳ TODO | ~4 hrs | CI/CD, deployment |
-| **TOTAL** | **32%** | **~32 hrs** | **Launch Ready** |
+| **3: Backend** | 🔄 65% DONE | ~4/6 hrs | Database connected to 4 pages |
+| **4: Auth** | ⏳ TODO | ~3 hrs | Login, signup, sessions |
+| **5: Payments** | ⏳ TODO | ~4 hrs | Stripe, payment flow |
+| **6: Mobile** | ⏳ TODO | ~10 hrs | React Native app |
+| **7: DevOps** | ⏳ TODO | ~4 hrs | CI/CD, deployment |
+| **TOTAL** | **45%** | **~33 hrs** | **Launch Ready** |
 
 ---
 
 ## 💾 GIT COMMITS
-
 ```
 ✅ 1. Initial: Setup monorepo structure with foundation config
 ✅ 2. Add: packages/config and packages/types with TypeScript setup
 ✅ 3. Build: Complete Phase 2 UI - Services, Booking, VIP, Gallery, Courses, Shop pages
+✅ 4. Phase 3: Connect backend - Services, Booking, Courses, Gallery now load from Supabase
 ```
 
 ---
 
-## 📝 SESSION SUMMARY (Session 2)
+## 📝 SESSION SUMMARY (Session 3)
 
-### Today's Work
-- ✅ Built Header/Navigation component with mobile menu
-- ✅ Created Services page (8 categories, expandable)
-- ✅ Built 4-step Booking Wizard (complete flow)
-- ✅ Created VIP Dashboard (gamification, 4 tabs)
-- ✅ Built Gallery with before/after showcase
-- ✅ Created Courses page (6 courses)
-- ✅ Built Shop preview (Shopify integration)
-- ✅ Connected all pages to navigation
+### Today's Work (December 31, 2025)
+- ✅ Created database schema (8 tables)
+- ✅ Ran SQL migrations in Supabase
+- ✅ Inserted seed data (staff, services, courses, gallery)
+- ✅ Installed & configured Supabase client
+- ✅ Connected Services page to database
+- ✅ Connected Booking flow to database
+- ✅ Connected Courses page to database
+- ✅ Connected Gallery page to database
+- ✅ Created test page to verify connection
 - ✅ Committed to GitHub
 
 ### Time Investment
-- ~5 hours of active development
-- 7 pages + 1 component built
-- All features functional with mock data
+- ~4 hours of active development
+- 4 pages connected to real data
+- Database fully operational
 
 ### Key Learnings
-- Edge browser issues with state updates (use Chrome instead)
-- Mock data approach is fastest for UI/UX
-- Will connect to Supabase in Phase 3
+- Environment variables must be in `apps/web/.env.local`
+- Must use `NEXT_PUBLIC_` prefix for client-side vars
+- Server restart required after env changes
+- Use legacy JWT anon key (not publishable key)
+- Chrome works better than Edge for React state
 
 ---
 
@@ -309,10 +257,9 @@ Create Supabase migrations for:
 |----------|-----|
 | GitHub Repo | https://github.com/joeyStruchlak/lash-mama |
 | Supabase Dev | https://supabase.com/dashboard (lash-mama-dev) |
-| Supabase UAT | https://supabase.com/dashboard (lash-mama-uat) |
 | Local App | http://localhost:3000 |
+| Test Page | http://localhost:3000/test |
 | Requirements | ./LASH_MAMA_REQUIREMENTS.md |
-| Architecture | ./GOLD_STANDARD_ARCHITECTURE.md |
 
 ---
 
@@ -322,46 +269,46 @@ Create Supabase migrations for:
 2. Navigate to project: `cd lash-mama`
 3. Start dev server: `npm run dev`
 4. Open browser: http://localhost:3000
-5. Explore all pages via Header navigation
-6. Click through booking flow to test
-7. Ready to add backend (Phase 3)
+5. Test database: http://localhost:3000/test (should be green ✅)
+6. Ready to continue Phase 3!
 
 ---
 
 ## 🎓 SESSION NOTES
 
-- **Browser**: Use Chrome (Edge has state issues)
-- **Styling**: All pages have basic styling, will refine in final polish phase
-- **Data**: All data is currently mock/hardcoded
-- **Next Phase**: Will connect to Supabase database & real data
-- **Timeline**: Phase 3 (backend) expected ~6 hours
+- **Browser**: Use Chrome (Edge has React state issues)
+- **Data**: 4 pages now load from database, 3 more to go
+- **Next Phase**: VIP dashboard + Authentication
+- **Timeline**: ~2-3 hours to complete Phase 3
 
 ---
 
-## 📊 FEATURE CHECKLIST - PHASE 2
+## 📊 FEATURE CHECKLIST - PHASE 3
 
-- [x] Header with navigation
-- [x] Services page with categories
-- [x] Booking flow (4 steps)
-- [x] VIP dashboard (gamification)
-- [x] Gallery (before/after)
-- [x] Courses page
-- [x] Shop preview
-- [x] Responsive mobile design
-- [x] Navigation between all pages
-- [x] All pages functional
-
----
-
-## 🚀 READY FOR PHASE 3!
-
-**Current Status**: All UI/UX complete ✅
-**Next Phase**: Backend integration with Supabase
-**Estimated Timeline**: 6-8 hours for Phase 3
-
-**The foundation is SOLID. Ready to add real data!**
+- [x] Database schema created
+- [x] Seed data inserted
+- [x] Supabase client configured
+- [x] Services page connected
+- [x] Booking flow connected
+- [x] Courses page connected
+- [x] Gallery page connected
+- [ ] VIP dashboard connected
+- [ ] User authentication
+- [ ] Save appointments
+- [ ] Payment integration
 
 ---
 
-*Document updated: December 30, 2025*
-*Session 2 Complete - All Pages Built*
+## 🚀 NEXT SESSION STARTS HERE!
+
+**Current Status**: Backend 65% complete  
+**Next Task**: Connect VIP Dashboard to database  
+**After That**: User authentication (signup/login)  
+**Estimated Time**: 2-3 hours to finish Phase 3
+
+**We're making AMAZING progress! 🔥**
+
+---
+
+*Document updated: December 31, 2025*
+*Session 3 Complete - Backend Connected to 4 Pages*

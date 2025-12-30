@@ -1,22 +1,79 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { supabase } from '@/lib/supabase';
+
+interface VIPProfile {
+  id: string;
+  user_id: string;
+  tier: string;
+  points: number;
+  bookings_count: number;
+  total_spent: number;
+  member_since: string;
+}
+
+interface Appointment {
+  id: string;
+  appointment_date: string;
+  appointment_time: string;
+  total_price: number;
+  status: string;
+  services: { name: string };
+  staff: { name: string };
+}
 
 export default function VIPPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'rewards' | 'notes'>('overview');
+  const [vipProfile, setVipProfile] = useState<VIPProfile | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState('');
 
-  // Mock user data
-  const user = {
-    name: 'Sarah Johnson',
-    tier: 'platinum',
-    points: 2450,
-    pointsToNextTier: 550,
-    bookingsCount: 24,
-    memberSince: 'January 2023',
-    totalSpent: 4850,
-  };
+  // Mock user for now (we'll add real auth later)
+  const mockUserId = 'demo-user-123';
+
+  useEffect(() => {
+    async function fetchVIPData() {
+      // For now, create a demo VIP profile if none exists
+      const demoProfile: VIPProfile = {
+        id: '1',
+        user_id: mockUserId,
+        tier: 'platinum',
+        points: 2450,
+        bookings_count: 24,
+        total_spent: 4850,
+        member_since: new Date('2023-01-15').toISOString(),
+      };
+
+      setVipProfile(demoProfile);
+
+      // Fetch real appointments (will be empty for now)
+      const { data: appointmentsData } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          appointment_date,
+          appointment_time,
+          total_price,
+          status,
+          services (name),
+          staff (name)
+        `)
+        .order('appointment_date', { ascending: false })
+        .limit(10);
+
+      if (appointmentsData) {
+        setAppointments(appointmentsData as any);
+      }
+
+      setLoading(false);
+    }
+
+    fetchVIPData();
+  }, []);
 
   const tiers = [
     { name: 'Bronze', minPoints: 0, color: 'text-yellow-700', bgColor: 'bg-yellow-50' },
@@ -34,19 +91,38 @@ export default function VIPPage() {
     { name: 'Platinum Tier', date: 'Nov 5, 2023' },
   ];
 
-  const bookingHistory = [
-    { date: 'Dec 20, 2024', service: 'Mega Volume Full Set', artist: 'Purni', price: '$250' },
-    { date: 'Dec 10, 2024', service: 'Volume Refills', artist: 'Nikki & Beau', price: '$70' },
-    { date: 'Nov 28, 2024', service: 'Natural/Hybrid Full Set', artist: 'Natali', price: '$150' },
-    { date: 'Nov 15, 2024', service: 'Mega Volume Full Set', artist: 'Purni', price: '$250' },
-  ];
-
   const rewards = [
     { name: '$50 Service Credit', points: 500, available: true },
     { name: 'Free Refill Service', points: 1000, available: true },
     { name: 'Premium Makeup Session', points: 1500, available: false },
     { name: 'Exclusive VIP Event Invite', points: 2000, available: false },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gold-50 py-12 flex items-center justify-center">
+        <p className="text-xl text-dark-secondary">Loading VIP dashboard...</p>
+      </div>
+    );
+  }
+
+  if (!vipProfile) {
+    return (
+      <div className="min-h-screen bg-gold-50 py-12 flex items-center justify-center">
+        <Card className="p-8 text-center max-w-md">
+          <h2 className="text-2xl font-serif font-bold text-dark mb-4">
+            Join VIP Program
+          </h2>
+          <p className="text-dark-secondary mb-6">
+            Book your first appointment to become a VIP member and start earning rewards!
+          </p>
+          <Button variant="primary">Book Now</Button>
+        </Card>
+      </div>
+    );
+  }
+
+  const pointsToNextTier = 3000 - vipProfile.points; // Diamond tier
 
   return (
     <div className="min-h-screen bg-gold-50 py-12">
@@ -57,7 +133,7 @@ export default function VIPPage() {
             VIP Loyalty Program
           </h1>
           <p className="text-xl text-dark-secondary">
-            Welcome, {user.name}! You're on the {user.tier} tier
+            Welcome! You're on the {vipProfile.tier} tier
           </p>
         </div>
 
@@ -66,25 +142,25 @@ export default function VIPPage() {
           <Card className="text-center p-6">
             <p className="text-dark-secondary mb-2">Current Tier</p>
             <h3 className="text-3xl font-serif font-bold text-gold-600 capitalize">
-              {user.tier}
+              {vipProfile.tier}
             </h3>
           </Card>
           <Card className="text-center p-6">
             <p className="text-dark-secondary mb-2">VIP Points</p>
             <h3 className="text-3xl font-serif font-bold text-dark">
-              {user.points}
+              {vipProfile.points}
             </h3>
           </Card>
           <Card className="text-center p-6">
             <p className="text-dark-secondary mb-2">Total Bookings</p>
             <h3 className="text-3xl font-serif font-bold text-dark">
-              {user.bookingsCount}
+              {vipProfile.bookings_count}
             </h3>
           </Card>
           <Card className="text-center p-6">
             <p className="text-dark-secondary mb-2">Total Spent</p>
             <h3 className="text-3xl font-serif font-bold text-gold-600">
-              ${user.totalSpent}
+              ${vipProfile.total_spent}
             </h3>
           </Card>
         </div>
@@ -97,11 +173,15 @@ export default function VIPPage() {
           <div className="w-full bg-gold-100 rounded-full h-4 mb-4">
             <div
               className="bg-gold-600 h-4 rounded-full transition-all"
-              style={{ width: `${(user.points / (user.points + user.pointsToNextTier)) * 100}%` }}
+              style={{
+                width: `${(vipProfile.points / (vipProfile.points + pointsToNextTier)) * 100}%`,
+              }}
             />
           </div>
           <p className="text-dark-secondary">
-            {user.pointsToNextTier} points until Diamond tier
+            {pointsToNextTier > 0
+              ? `${pointsToNextTier} points until Diamond tier`
+              : 'You are at the highest tier!'}
           </p>
         </Card>
 
@@ -132,13 +212,18 @@ export default function VIPPage() {
               </h3>
               <div className="space-y-3">
                 {achievements.map((achievement) => (
-                  <div key={achievement.name} className="flex items-center gap-3 pb-3 border-b border-gold-100">
+                  <div
+                    key={achievement.name}
+                    className="flex items-center gap-3 pb-3 border-b border-gold-100"
+                  >
                     <div className="text-2xl">⭐</div>
                     <div>
                       <p className="font-serif font-bold text-dark">
                         {achievement.name}
                       </p>
-                      <p className="text-sm text-dark-secondary">{achievement.date}</p>
+                      <p className="text-sm text-dark-secondary">
+                        {achievement.date}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -152,10 +237,7 @@ export default function VIPPage() {
               </h3>
               <div className="space-y-3">
                 {tiers.map((tier) => (
-                  <div
-                    key={tier.name}
-                    className={`p-3 rounded-lg ${tier.bgColor}`}
-                  >
+                  <div key={tier.name} className={`p-3 rounded-lg ${tier.bgColor}`}>
                     <p className={`font-serif font-bold ${tier.color}`}>
                       {tier.name} - {tier.minPoints}+ points
                     </p>
@@ -171,26 +253,33 @@ export default function VIPPage() {
             <h3 className="text-2xl font-serif font-bold text-dark mb-6">
               Booking History
             </h3>
-            <div className="space-y-4">
-              {bookingHistory.map((booking) => (
-                <div
-                  key={booking.date}
-                  className="flex justify-between items-center p-4 border-b border-gold-100"
-                >
-                  <div>
-                    <p className="font-serif font-bold text-dark">
-                      {booking.service}
-                    </p>
-                    <p className="text-sm text-dark-secondary">
-                      {booking.date} • {booking.artist}
+            {appointments.length === 0 ? (
+              <p className="text-dark-secondary text-center py-8">
+                No bookings yet. Book your first appointment to see it here!
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {appointments.map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="flex justify-between items-center p-4 border-b border-gold-100"
+                  >
+                    <div>
+                      <p className="font-serif font-bold text-dark">
+                        {booking.services.name}
+                      </p>
+                      <p className="text-sm text-dark-secondary">
+                        {new Date(booking.appointment_date).toLocaleDateString()} •{' '}
+                        {booking.staff.name}
+                      </p>
+                    </div>
+                    <p className="text-xl font-bold text-gold-600">
+                      ${booking.total_price}
                     </p>
                   </div>
-                  <p className="text-xl font-bold text-gold-600">
-                    {booking.price}
-                  </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Card>
         )}
 
@@ -206,9 +295,7 @@ export default function VIPPage() {
                   className="flex justify-between items-center p-4 border-2 border-gold-100 rounded-lg"
                 >
                   <div>
-                    <p className="font-serif font-bold text-dark">
-                      {reward.name}
-                    </p>
+                    <p className="font-serif font-bold text-dark">{reward.name}</p>
                     <p className="text-sm text-dark-secondary">
                       {reward.points} points
                     </p>
@@ -232,6 +319,8 @@ export default function VIPPage() {
             </h3>
             <div className="space-y-4">
               <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add notes about your beauty goals, preferences, or reminders..."
                 className="w-full p-4 border-2 border-gold-200 rounded-lg min-h-32 font-sans"
               />
