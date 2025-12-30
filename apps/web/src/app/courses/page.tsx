@@ -1,124 +1,70 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { supabase } from '@/lib/supabase';
 
-const coursesData = [
-  {
-    id: 1,
-    name: 'VIP Vogue One-on-One Lash Course',
-    level: 'Advanced',
-    price: 599,
-    duration: '6 weeks',
-    instructor: 'Lash Mama (Purni)',
-    description:
-      'Premium individual training with personalized instruction. Learn advanced lashing techniques and build your portfolio.',
-    highlights: [
-      'One-on-one mentorship',
-      'Advanced techniques',
-      'Portfolio building',
-      'Exclusive materials included',
-    ],
-    vipOnly: true,
-  },
-  {
-    id: 2,
-    name: 'Platinum Lash Course',
-    level: 'Advanced',
-    price: 399,
-    duration: '4 weeks',
-    instructor: 'Nikki & Beau',
-    description:
-      'Advanced lashing techniques for professionals. Perfect for those wanting to specialize in volume and mega volume sets.',
-    highlights: [
-      'Advanced volume techniques',
-      'Group or 1-on-1 options',
-      'Certification included',
-      'Lifetime access to materials',
-    ],
-    vipOnly: false,
-  },
-  {
-    id: 3,
-    name: 'Silver Lash Course',
-    level: 'Intermediate',
-    price: 249,
-    duration: '3 weeks',
-    instructor: 'Natali',
-    description:
-      'Intermediate lashing techniques. Learn foundational skills and improve your application speed and precision.',
-    highlights: [
-      'Intermediate techniques',
-      'Group class format',
-      'Hands-on practice',
-      'Certificate of completion',
-    ],
-    vipOnly: false,
-  },
-  {
-    id: 4,
-    name: 'Gold Lash Course',
-    level: 'Beginner',
-    price: 149,
-    duration: '2 weeks',
-    instructor: 'Lash Mama (Purni)',
-    description:
-      'Introduction to lash extensions. Perfect for beginners wanting to learn the basics of application.',
-    highlights: [
-      'Beginner-friendly',
-      'Introduction to lashing',
-      'Group setting',
-      'Affordable entry point',
-    ],
-    vipOnly: false,
-  },
-  {
-    id: 5,
-    name: 'DIY Makeup Course',
-    level: 'Beginner',
-    price: 179,
-    duration: '2 weeks',
-    instructor: 'Nikki & Beau',
-    description:
-      'Learn professional makeup application techniques for everyday wear and special occasions at home.',
-    highlights: [
-      'Self-application techniques',
-      'Product knowledge',
-      'At-home styling tips',
-      'Video tutorials included',
-    ],
-    vipOnly: false,
-  },
-  {
-    id: 6,
-    name: 'Masterclass & Hairstyling',
-    level: 'Advanced',
-    price: 299,
-    duration: '3 weeks',
-    instructor: 'Natali',
-    description:
-      'Advanced hair styling techniques including updos, curls, and bridal hair styling for special occasions.',
-    highlights: [
-      'Advanced styling',
-      'Updo specialization',
-      'Bridal styling focus',
-      'Premium group workshop',
-    ],
-    vipOnly: false,
-  },
-];
+interface Course {
+  id: string;
+  name: string;
+  level: string;
+  price: number;
+  duration: string;
+  instructor_id: string;
+  description: string;
+  highlights: string[];
+  vip_only: boolean;
+}
+
+interface Staff {
+  id: string;
+  name: string;
+}
 
 const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
 export default function CoursesPage() {
   const [selectedLevel, setSelectedLevel] = useState('All');
-  const [selectedCourse, setSelectedCourse] = useState<typeof coursesData[0] | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      const [coursesRes, staffRes] = await Promise.all([
+        supabase.from('courses').select('*').eq('is_active', true),
+        supabase.from('staff').select('id, name'),
+      ]);
+
+      if (coursesRes.data) setCourses(coursesRes.data);
+      if (staffRes.data) setStaff(staffRes.data);
+      setLoading(false);
+    }
+
+    fetchData();
+  }, []);
 
   const filteredCourses =
     selectedLevel === 'All'
-      ? coursesData
-      : coursesData.filter((course) => course.level === selectedLevel);
+      ? courses
+      : courses.filter(
+          (course) => course.level.toLowerCase() === selectedLevel.toLowerCase()
+        );
+
+  const getInstructorName = (instructorId: string) => {
+    const instructor = staff.find((s) => s.id === instructorId);
+    return instructor?.name || 'TBA';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gold-50 py-12 flex items-center justify-center">
+        <p className="text-xl text-dark-secondary">Loading courses...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gold-50 py-12">
@@ -160,7 +106,7 @@ export default function CoursesPage() {
             >
               <Card className="p-6 h-full flex flex-col hover:shadow-lg transition-shadow">
                 {/* VIP Badge */}
-                {course.vipOnly && (
+                {course.vip_only && (
                   <div className="mb-3 inline-block px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-xs font-bold">
                     VIP Only
                   </div>
@@ -171,12 +117,12 @@ export default function CoursesPage() {
                   {course.name}
                 </h3>
                 <p className="text-sm text-dark-secondary mb-3">
-                  by {course.instructor}
+                  by {getInstructorName(course.instructor_id)}
                 </p>
 
                 {/* Level & Duration */}
                 <div className="flex gap-4 mb-4 text-sm">
-                  <span className="px-3 py-1 bg-gold-50 text-dark-secondary rounded-full font-bold">
+                  <span className="px-3 py-1 bg-gold-50 text-dark-secondary rounded-full font-bold capitalize">
                     {course.level}
                   </span>
                   <span className="px-3 py-1 bg-gold-50 text-dark-secondary rounded-full font-bold">
@@ -217,7 +163,7 @@ export default function CoursesPage() {
                 ✕
               </button>
 
-              {selectedCourse.vipOnly && (
+              {selectedCourse.vip_only && (
                 <div className="mb-4 inline-block px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-sm font-bold">
                   VIP Only
                 </div>
@@ -227,11 +173,11 @@ export default function CoursesPage() {
                 {selectedCourse.name}
               </h2>
               <p className="text-dark-secondary mb-4">
-                by {selectedCourse.instructor}
+                by {getInstructorName(selectedCourse.instructor_id)}
               </p>
 
               <div className="flex gap-4 mb-6">
-                <span className="px-3 py-1 bg-gold-50 text-dark-secondary rounded-full font-bold text-sm">
+                <span className="px-3 py-1 bg-gold-50 text-dark-secondary rounded-full font-bold text-sm capitalize">
                   {selectedCourse.level}
                 </span>
                 <span className="px-3 py-1 bg-gold-50 text-dark-secondary rounded-full font-bold text-sm">
@@ -247,8 +193,11 @@ export default function CoursesPage() {
                 What You'll Learn:
               </h4>
               <ul className="space-y-2 mb-6">
-                {selectedCourse.highlights.map((highlight) => (
-                  <li key={highlight} className="text-dark-secondary flex items-start gap-2">
+                {selectedCourse.highlights.map((highlight, index) => (
+                  <li
+                    key={index}
+                    className="text-dark-secondary flex items-start gap-2"
+                  >
                     <span className="text-gold-600 font-bold">✓</span>
                     {highlight}
                   </li>
@@ -262,7 +211,10 @@ export default function CoursesPage() {
                   ${selectedCourse.price}
                 </p>
                 <div className="flex gap-4">
-                  <Button variant="outline" onClick={() => setSelectedCourse(null)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedCourse(null)}
+                  >
                     Close
                   </Button>
                   <Button variant="primary">Enroll Now</Button>
