@@ -37,11 +37,29 @@ export function BookingWizard() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
+    const [userProfile, setUserProfile] = useState<any>(null);
     const router = useRouter();
 
     // Fetch services and staff on mount
     useEffect(() => {
         async function fetchData() {
+            // Get current user
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (user) {
+                setUserId(user.id);
+
+                // Get user profile (for VIP status and birthday)
+                const { data: profile } = await supabase
+                    .from('users')
+                    .select('role, birthday')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) setUserProfile(profile);
+            }
+
+            // Fetch services and staff
             const [servicesRes, staffRes] = await Promise.all([
                 supabase.from('services').select('*').eq('is_active', true),
                 supabase.from('staff').select('*').eq('is_active', true),
@@ -54,14 +72,6 @@ export function BookingWizard() {
 
         fetchData();
     }, []);
-
-    // Get current user
-    useEffect(() => {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-            if (user) setUserId(user.id);
-        });
-    }, []);
-
 
     const selectedService = services.find((s) => s.id === booking.serviceId);
     const selectedStaff = staff.find((s) => s.id === booking.staffId);
@@ -91,6 +101,42 @@ export function BookingWizard() {
         );
     }
 
+    const calculateDiscount = () => {
+        if (!selectedService || userProfile?.role !== 'vip') return 0;
+
+        const serviceName = selectedService.name.toLowerCase();
+        const today = new Date();
+        const birthday = userProfile.birthday ? new Date(userProfile.birthday) : null;
+        const isBirthday = birthday &&
+            today.getMonth() === birthday.getMonth() &&
+            today.getDate() === birthday.getDate();
+
+        // VIP Discounts
+        if (serviceName.includes('refill')) {
+            // Birthday discount on refills
+            if (isBirthday) return 20;
+            // Regular VIP refill discount
+            return 10;
+        }
+
+        if (serviceName.includes('mega volume') && serviceName.includes('full set')) {
+            return 30;
+        }
+
+        if (serviceName.includes('volume') && serviceName.includes('full set') && !serviceName.includes('mega')) {
+            return 30;
+        }
+
+        if ((serviceName.includes('natural') || serviceName.includes('hybrid')) && serviceName.includes('full set')) {
+            return 20;
+        }
+
+        return 0;
+    };
+
+    const discountAmount = calculateDiscount();
+    const discountedPrice = finalPrice - discountAmount;
+
     const handleCompleteBooking = async () => {
         if (!userId || !booking.serviceId || !booking.staffId || !booking.date || !booking.time) {
             alert('Please complete all steps');
@@ -109,7 +155,9 @@ export function BookingWizard() {
                     staff_id: booking.staffId,
                     appointment_date: booking.date,
                     appointment_time: booking.time,
-                    total_price: finalPrice,
+                    total_price: discountedPrice,
+                    discount_applied: discountAmount,
+                    discount_type: discountAmount > 0 ? 'vip_discount' : null,
                     status: 'pending',
                     can_reschedule: true,
                 })
@@ -318,11 +366,32 @@ export function BookingWizard() {
                                     <span className="text-dark-secondary">Time:</span>
                                     <span className="font-bold text-dark">{booking.time}</span>
                                 </div>
-                                <div className="pt-4 border-t-2 border-gold-200 flex justify-between">
-                                    <span className="font-bold text-dark">Total:</span>
-                                    <span className="text-3xl font-bold text-gold-600">
-                                        ${finalPrice.toFixed(2)}
-                                    </span>
+                                <div className="pt-4 border-t-2 border-gold-200">
+                                    {/* Show discount if VIP */}
+                                    {discountAmount > 0 && (
+                                        <>
+                                            <div className="flex justify-between mb-2">
+                                                <span className="text-dark-secondary">Subtotal:</span>
+                                                <span className="text-dark-secondary line-through">
+                                                    ${finalPrice.toFixed(2)}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between mb-2">
+                                                <span className="text-green-600 font-bold">
+                                                    💎 VIP Discount:
+                                                </span>
+                                                <span className="text-green-600 font-bold">
+                                                    -${discountAmount.toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </>
+                                    )}
+                                    <div className="flex justify-between">
+                                        <span className="font-bold text-dark">Total:</span>
+                                        <span className="text-3xl font-bold text-gold-600">
+                                            ${discountedPrice.toFixed(2)}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <p className="text-sm text-dark-secondary mb-6">

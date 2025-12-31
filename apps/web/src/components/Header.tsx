@@ -9,17 +9,41 @@ import { useRouter } from 'next/navigation';
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string>('user');
   const router = useRouter();
 
   useEffect(() => {
     // Check current user
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user);
+      
+      if (user) {
+        // Get user role
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile) setUserRole(profile.role);
+      }
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile) setUserRole(profile.role);
+      } else {
+        setUserRole('user');
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -64,9 +88,21 @@ export function Header() {
             {/* Auth Buttons */}
             {user ? (
               <div className="flex items-center gap-4">
-                <span className="text-dark-secondary text-sm">
-                  {user.email}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-dark-secondary text-sm">
+                    {user.email}
+                  </span>
+                  {userRole === 'vip' && (
+                    <span className="text-lg" title="VIP Member">
+                      💎
+                    </span>
+                  )}
+                  {userRole === 'admin' && (
+                    <span className="text-lg" title="Admin">
+                      👑
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-500 transition-colors font-medium"
@@ -132,7 +168,15 @@ export function Header() {
             {/* Mobile Auth Buttons */}
             {user ? (
               <div className="pt-4 border-t border-gold-200 space-y-3">
-                <p className="text-dark-secondary text-sm">{user.email}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-dark-secondary text-sm">{user.email}</p>
+                  {userRole === 'vip' && (
+                    <span className="text-lg" title="VIP Member">💎</span>
+                  )}
+                  {userRole === 'admin' && (
+                    <span className="text-lg" title="Admin">👑</span>
+                  )}
+                </div>
                 <button
                   onClick={handleLogout}
                   className="w-full px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-500 transition-colors font-medium"
