@@ -1,11 +1,35 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { Button } from './Button';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { signOut } from '@/lib/auth';
+import { useRouter } from 'next/navigation';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check current user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut();
+    setUser(null);
+    router.push('/');
+  };
 
   const navItems = [
     { label: 'Book', href: '/book' },
@@ -17,81 +41,126 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-md border-b border-gold-100">
-      <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex-shrink-0">
-          <h1 className="text-3xl font-serif font-bold text-gold-600 hover:text-gold-500 transition-colors">
+    <header className="bg-white border-b border-gold-200 sticky top-0 z-50 shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <Link href="/" className="text-2xl font-serif font-bold text-dark">
             Lash Mama
-          </h1>
-        </Link>
+          </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-12 flex-1 justify-center">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-dark font-medium hover:text-gold-600 transition-colors duration-200 text-lg"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Desktop Right Side */}
-        <div className="hidden md:flex items-center gap-4 flex-shrink-0">
-          <Button variant="outline">Login</Button>
-          <Button variant="primary">Book Now</Button>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2 ml-auto"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <svg
-            className="w-6 h-6 text-dark"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gold-100 shadow-md">
-          <nav className="flex flex-col gap-4 p-6">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex gap-8 items-center">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-dark hover:text-gold-600 transition-colors font-medium text-lg"
+                className="text-dark hover:text-gold-600 transition-colors font-medium"
+              >
+                {item.label}
+              </Link>
+            ))}
+
+            {/* Auth Buttons */}
+            {user ? (
+              <div className="flex items-center gap-4">
+                <span className="text-dark-secondary text-sm">
+                  {user.email}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-500 transition-colors font-medium"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-4">
+                <Link
+                  href="/login"
+                  className="px-4 py-2 border-2 border-gold-600 text-gold-600 rounded-lg hover:bg-gold-50 transition-colors font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-500 transition-colors font-medium"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden text-dark"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              {isMenuOpen ? (
+                <path d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <nav className="md:hidden mt-4 pb-4 space-y-3">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="block text-dark hover:text-gold-600 transition-colors font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}
               </Link>
             ))}
-            <div className="flex flex-col gap-3 pt-6 border-t border-gold-100">
-              <Button variant="outline" className="w-full">
-                Login
-              </Button>
-              <Button variant="primary" className="w-full">
-                Book Now
-              </Button>
-            </div>
+
+            {/* Mobile Auth Buttons */}
+            {user ? (
+              <div className="pt-4 border-t border-gold-200 space-y-3">
+                <p className="text-dark-secondary text-sm">{user.email}</p>
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-500 transition-colors font-medium"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="pt-4 border-t border-gold-200 space-y-3">
+                <Link
+                  href="/login"
+                  className="block text-center px-4 py-2 border-2 border-gold-600 text-gold-600 rounded-lg hover:bg-gold-50 transition-colors font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="block text-center px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-500 transition-colors font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </nav>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 }
