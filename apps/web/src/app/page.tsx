@@ -1,3 +1,5 @@
+import { VIPProgressBanner } from '@/components/VIPProgressBanner';
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gold-50 to-white">
@@ -8,6 +10,12 @@ export default function Home() {
         <p className="text-xl text-dark-secondary mb-12">
           Luxury beauty salon booking experience
         </p>
+
+        {/* VIP Progress Banner - ADD HERE */}
+        <div className="mb-12">
+          <VIPProgressBanner />
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-2xl font-serif mb-4">Book</h2>
