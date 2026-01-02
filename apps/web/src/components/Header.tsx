@@ -10,39 +10,47 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<string>('user');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     // Check current user
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user);
-      
+
       if (user) {
-        // Get user role
+        // Get user role and avatar
         const { data: profile } = await supabase
           .from('users')
-          .select('role')
+          .select('role, avatar_url')
           .eq('id', user.id)
           .single();
-        
-        if (profile) setUserRole(profile.role);
+
+        if (profile) {
+          setUserRole(profile.role);
+          setAvatarUrl(profile.avatar_url);
+        }
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         const { data: profile } = await supabase
           .from('users')
-          .select('role')
+          .select('role, avatar_url')
           .eq('id', session.user.id)
           .single();
-        
-        if (profile) setUserRole(profile.role);
+
+        if (profile) {
+          setUserRole(profile.role);
+          setAvatarUrl(profile.avatar_url);
+        }
       } else {
         setUserRole('user');
+        setAvatarUrl(null);
       }
     });
 
@@ -51,8 +59,7 @@ export function Header() {
 
   const handleLogout = async () => {
     await signOut();
-    setUser(null);
-    router.push('/');
+    window.location.href = '/';
   };
 
   const navItems = [
@@ -63,6 +70,8 @@ export function Header() {
     { label: 'Shop', href: '/shop' },
     { label: 'Courses', href: '/courses' },
   ];
+
+  const isVIP = userRole === 'vip';
 
   return (
     <header className="bg-white border-b border-gold-200 sticky top-0 z-50 shadow-sm">
@@ -88,21 +97,28 @@ export function Header() {
             {/* Auth Buttons */}
             {user ? (
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-dark-secondary text-sm">
-                    {user.email}
-                  </span>
-                  {userRole === 'vip' && (
-                    <span className="text-lg" title="VIP Member">
+                {/* Avatar with VIP Badge */}
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gold-100 border-2 border-gold-300">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gold-600 font-bold">
+                        {user.email?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  {isVIP && (
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-gold-600 to-gold-500 rounded-full flex items-center justify-center text-xs border-2 border-white">
                       💎
-                    </span>
-                  )}
-                  {userRole === 'admin' && (
-                    <span className="text-lg" title="Admin">
-                      👑
-                    </span>
+                    </div>
                   )}
                 </div>
+
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-500 transition-colors font-medium"
@@ -168,14 +184,29 @@ export function Header() {
             {/* Mobile Auth Buttons */}
             {user ? (
               <div className="pt-4 border-t border-gold-200 space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  {/* Mobile Avatar */}
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gold-100 border-2 border-gold-300">
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gold-600 font-bold">
+                          {user.email?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    {isVIP && (
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-gold-600 to-gold-500 rounded-full flex items-center justify-center text-xs border-2 border-white">
+                        💎
+                      </div>
+                    )}
+                  </div>
                   <p className="text-dark-secondary text-sm">{user.email}</p>
-                  {userRole === 'vip' && (
-                    <span className="text-lg" title="VIP Member">💎</span>
-                  )}
-                  {userRole === 'admin' && (
-                    <span className="text-lg" title="Admin">👑</span>
-                  )}
                 </div>
                 <button
                   onClick={handleLogout}
