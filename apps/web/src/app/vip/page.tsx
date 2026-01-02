@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { supabase } from '@/lib/supabase';
-import type { User } from '@supabase/supabase-js';
+import type { UserRole } from '@/types/user';
 import { useRouter } from 'next/navigation';
 import NotesManager from '@/components/NotesManager';
 import AvatarUpload from '@/components/AvatarUpload';

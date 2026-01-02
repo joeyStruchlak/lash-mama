@@ -5,9 +5,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { signOut } from '@/lib/auth';
 import type { User } from '@supabase/supabase-js';
+import type { UserRole } from '@/types/user';
 
 interface UserProfile {
-  role: 'user' | 'vip' | 'admin';
+  role: UserRole;
   avatar_url: string | null;
 }
 

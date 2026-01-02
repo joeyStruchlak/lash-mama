@@ -6,6 +6,7 @@ import { Card } from '@/components/Card';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
+import type { UserRole } from '@/types/user';
 
 interface Service {
     id: string;
@@ -37,14 +38,14 @@ export function BookingWizard() {
     const [staff, setStaff] = useState<Staff[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    interface UserProfile {
-        role: 'user' | 'vip' | 'admin';
+    interface BookingUserProfile {
+        role: UserRole;
         birthday: string | null;
         last_booking_date: string | null;
     }
 
     const [userId, setUserId] = useState<string | null>(null);
-    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [userProfile, setUserProfile] = useState<BookingUserProfile | null>(null);
     const router = useRouter();
 
     // Fetch services and staff on mount
