@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { supabase } from '@/lib/supabase';
+import type { User } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 import NotesManager from '@/components/NotesManager';
 import AvatarUpload from '@/components/AvatarUpload';
 
@@ -25,8 +27,8 @@ interface Appointment {
     status: string;
     discount_applied: number;
     discount_type: string | null;
-    services: { name: string };
-    staff: { name: string };
+    services: { name: string }[];
+    staff: { name: string }[];
 }
 
 export default function VIPPage() {
@@ -35,70 +37,116 @@ export default function VIPPage() {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const router = useRouter();
 
 
     useEffect(() => {
-        async function fetchVIPData() {
-            // Get current user
-            const { data: { user } } = await supabase.auth.getUser();
+        async function fetchVIPData(): Promise<void> {
+            try {
+                // Get current user
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-            if (!user) {
+                if (userError) {
+                    console.error('Error fetching user:', userError);
+                    setLoading(false);
+                    return;
+                }
+
+                if (!user) {
+                    setLoading(false);
+                    return;
+                }
+
+                // Fetch user's avatar
+                const { data: userData, error: avatarError } = await supabase
+                    .from('users')
+                    .select('avatar_url')
+                    .eq('id', user.id)
+                    .single();
+
+                if (avatarError) {
+                    console.error('Error fetching avatar:', avatarError);
+                } else if (userData) {
+                    setAvatarUrl(userData.avatar_url);
+                }
+
+                // For now, create a demo VIP profile
+                const demoProfile: VIPProfile = {
+                    id: '1',
+                    user_id: user.id,
+                    tier: 'platinum',
+                    points: 2450,
+                    bookings_count: 24,
+                    total_spent: 4850,
+                    member_since: new Date('2023-01-15').toISOString(),
+                };
+
+                setVipProfile(demoProfile);
+
+                // Fetch real appointments
+                const { data: appointmentsData, error: appointmentsError } = await supabase
+                    .from('appointments')
+                    .select(`
+                    id,
+                    appointment_date,
+                    appointment_time,
+                    total_price,
+                    status,
+                    discount_applied,
+                    discount_type,
+                    services (name),
+                    staff (name)
+                `)
+                    .eq('user_id', user.id)
+                    .order('appointment_date', { ascending: false })
+                    .limit(10);
+
+                if (appointmentsError) {
+                    console.error('Error fetching appointments:', appointmentsError);
+                } else if (appointmentsData) {
+                    setAppointments(appointmentsData as Appointment[]);
+                }
+
+            } catch (error) {
+                console.error('Unexpected error in fetchVIPData:', error);
+            } finally {
                 setLoading(false);
-                return;
             }
-
-            // Fetch user's avatar
-            const { data: userData } = await supabase
-                .from('users')
-                .select('avatar_url')
-                .eq('id', user.id)
-                .single();
-
-            if (userData) {
-                setAvatarUrl(userData.avatar_url);
-            }
-
-            // For now, create a demo VIP profile
-            const demoProfile: VIPProfile = {
-                id: '1',
-                user_id: user.id,
-                tier: 'platinum',
-                points: 2450,
-                bookings_count: 24,
-                total_spent: 4850,
-                member_since: new Date('2023-01-15').toISOString(),
-            };
-
-            setVipProfile(demoProfile);
-
-            // Fetch real appointments
-            const { data: appointmentsData } = await supabase
-                .from('appointments')
-                .select(`
-        id,
-        appointment_date,
-        appointment_time,
-        total_price,
-        status,
-        discount_applied,
-        discount_type,
-        services (name),
-        staff (name)
-      `)
-                .eq('user_id', user.id)
-                .order('appointment_date', { ascending: false })
-                .limit(10);
-
-            if (appointmentsData) {
-                setAppointments(appointmentsData as any);
-            }
-
-            setLoading(false);
         }
 
         fetchVIPData();
     }, []);
 
+    const handleCancelAppointment = async (appointmentId: string): Promise<void> => {
+        try {
+            const { error } = await supabase
+                .from('appointments')
+                .update({ status: 'cancelled' })
+                .eq('id', appointmentId);
+
+            if (error) {
+                console.error('Supabase error:', error);
+                throw new Error('Failed to cancel appointment in database');
+            }
+
+            // Update local state optimistically
+            setAppointments(prev =>
+                prev.map(appointment =>
+                    appointment.id === appointmentId
+                        ? { ...appointment, status: 'cancelled' }
+                        : appointment
+                )
+            );
+
+            // TODO: Replace with toast notification in styling phase
+            alert('Appointment cancelled successfully');
+
+        } catch (error) {
+            console.error('Error cancelling appointment:', error);
+            const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+            alert(`Failed to cancel: ${errorMessage}`);
+        }
+    };
     const tiers = [
         { name: 'Bronze', minPoints: 0, color: 'text-yellow-700', bgColor: 'bg-yellow-50' },
         { name: 'Silver', minPoints: 500, color: 'text-gray-400', bgColor: 'bg-gray-50' },
@@ -292,10 +340,10 @@ export default function VIPPage() {
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
                                                 <p className="font-serif font-bold text-dark text-lg">
-                                                    {booking.services.name}
+                                                    {booking.services[0]?.name || 'Unknown Service'}
                                                 </p>
                                                 <p className="text-sm text-dark-secondary">
-                                                    with {booking.staff.name}
+                                                    with {booking.staff[0]?.name || 'Unknown Staff'}
                                                 </p>
                                             </div>
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold ${booking.status === 'completed' ? 'bg-green-100 text-green-700' :
@@ -329,17 +377,61 @@ export default function VIPPage() {
                                             </div>
                                         )}
 
-                                        {/* Rebook Button */}
-                                        <div className="mt-4 pt-4 border-t border-gold-100">
+                                        {/* Action Buttons */}
+                                        <div className="mt-4 pt-4 border-t border-gold-100 space-y-3">
+                                            {/* Reschedule Button (only for pending/confirmed appointments) */}
+                                            {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                                                <Button
+                                                    variant="primary"
+                                                    className="w-full"
+                                                    onClick={() => {
+                                                        try {
+                                                            const appointmentDate = new Date(booking.appointment_date);
+                                                            const now = new Date();
+
+                                                            // Calculate hours until appointment
+                                                            const millisecondsUntilAppt = appointmentDate.getTime() - now.getTime();
+                                                            const hoursUntilAppt = millisecondsUntilAppt / (1000 * 60 * 60);
+
+                                                            // 48-hour policy check
+                                                            if (hoursUntilAppt < 48) {
+                                                                alert('Appointments must be rescheduled at least 48 hours in advance. Please contact the salon directly to reschedule.');
+                                                                return;
+                                                            }
+
+                                                            // Confirm cancellation
+                                                            const confirmed = window.confirm(
+                                                                'This will cancel your current appointment. You can then book a new time. Continue?'
+                                                            );
+
+                                                            if (confirmed) {
+                                                                handleCancelAppointment(booking.id);
+                                                            }
+                                                        } catch (error) {
+                                                            console.error('Error in reschedule handler:', error);
+                                                            alert('Unable to process reschedule request. Please try again.');
+                                                        }
+                                                    }}
+                                                >
+                                                    Reschedule Appointment
+                                                </Button>
+                                            )}
+
+                                            {/* Rebook Button (for all appointments) */}
                                             <Button
                                                 variant="outline"
                                                 className="w-full"
                                                 onClick={() => {
-                                                    // Store booking details and redirect
-                                                    window.location.href = `/book?service=${booking.services.name}&staff=${booking.staff.name}`;
+                                                    try {
+                                                        router.push('/book');
+                                                    } catch (error) {
+                                                        console.error('Navigation error:', error);
+                                                        // Fallback to hard navigation if router fails
+                                                        window.location.href = '/book';
+                                                    }
                                                 }}
                                             >
-                                                📅 Rebook This Service
+                                                Book Again
                                             </Button>
                                         </div>
                                     </div>
@@ -390,7 +482,13 @@ export default function VIPPage() {
                         <AvatarUpload
                             userId={vipProfile.user_id}
                             currentAvatarUrl={avatarUrl}
-                            onUploadComplete={(url) => setAvatarUrl(url)}
+                            onUploadComplete={(url) => {
+                                setAvatarUrl(url);
+                                // Force a small delay then trigger window event for header
+                                setTimeout(() => {
+                                    window.dispatchEvent(new Event('avatar-updated'));
+                                }, 100);
+                            }}
                         />
                     </div>
                 )}

@@ -4,62 +4,96 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { signOut } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
+import type { User } from '@supabase/supabase-js';
+
+interface UserProfile {
+  role: 'user' | 'vip' | 'admin';
+  avatar_url: string | null;
+}
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [userRole, setUserRole] = useState<string>('user');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    // Check current user
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      setUser(user);
+    async function loadUser(): Promise<void> {
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-      if (user) {
-        // Get user role and avatar
-        const { data: profile } = await supabase
-          .from('users')
-          .select('role, avatar_url')
-          .eq('id', user.id)
-          .single();
-
-        if (profile) {
-          setUserRole(profile.role);
-          setAvatarUrl(profile.avatar_url);
+        if (userError) {
+          console.error('Error fetching user:', userError);
+          return;
         }
+
+        setUser(user);
+
+        if (user) {
+          const { data: profile, error: profileError } = await supabase
+            .from('users')
+            .select('role, avatar_url')
+            .eq('id', user.id)
+            .single();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+          } else if (profile) {
+            setUserProfile(profile);
+          }
+        }
+      } catch (error) {
+        console.error('Unexpected error in loadUser:', error);
       }
-    });
+    }
+
+    loadUser();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('role, avatar_url')
-          .eq('id', session.user.id)
-          .single();
+        try {
+          const { data: profile, error } = await supabase
+            .from('users')
+            .select('role, avatar_url')
+            .eq('id', session.user.id)
+            .single();
 
-        if (profile) {
-          setUserRole(profile.role);
-          setAvatarUrl(profile.avatar_url);
+          if (error) {
+            console.error('Error fetching profile:', error);
+          } else if (profile) {
+            setUserProfile(profile);
+          }
+        } catch (error) {
+          console.error('Error in auth state change:', error);
         }
       } else {
-        setUserRole('user');
-        setAvatarUrl(null);
+        setUserProfile(null);
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for avatar updates
+    const handleAvatarUpdate = (): void => {
+      loadUser();
+    };
+
+    window.addEventListener('avatar-updated', handleAvatarUpdate);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('avatar-updated', handleAvatarUpdate);
+    };
   }, []);
 
-  const handleLogout = async () => {
-    await signOut();
-    window.location.href = '/';
+  const handleLogout = async (): Promise<void> => {
+    try {
+      await signOut();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error logging out:', error);
+      alert('Failed to log out. Please try again.');
+    }
   };
 
   const navItems = [
@@ -71,18 +105,16 @@ export function Header() {
     { label: 'Courses', href: '/courses' },
   ];
 
-  const isVIP = userRole === 'vip';
+  const isVIP = userProfile?.role === 'vip';
 
   return (
     <header className="bg-white border-b border-gold-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
-          {/* Logo */}
           <Link href="/" className="text-2xl font-serif font-bold text-dark">
             Lash Mama
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex gap-8 items-center">
             {navItems.map((item) => (
               <Link
@@ -94,15 +126,13 @@ export function Header() {
               </Link>
             ))}
 
-            {/* Auth Buttons */}
             {user ? (
               <div className="flex items-center gap-4">
-                {/* Avatar with VIP Badge */}
                 <div className="relative">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-gold-100 border-2 border-gold-300">
-                    {avatarUrl ? (
+                    {userProfile?.avatar_url ? (
                       <img
-                        src={avatarUrl}
+                        src={userProfile.avatar_url}
                         alt="Profile"
                         className="w-full h-full object-cover"
                       />
@@ -144,10 +174,10 @@ export function Header() {
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden text-dark"
+            aria-label="Toggle menu"
           >
             <svg
               className="w-6 h-6"
@@ -167,7 +197,6 @@ export function Header() {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 space-y-3">
             {navItems.map((item) => (
@@ -181,16 +210,14 @@ export function Header() {
               </Link>
             ))}
 
-            {/* Mobile Auth Buttons */}
             {user ? (
               <div className="pt-4 border-t border-gold-200 space-y-3">
                 <div className="flex items-center gap-3">
-                  {/* Mobile Avatar */}
                   <div className="relative">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gold-100 border-2 border-gold-300">
-                      {avatarUrl ? (
+                      {userProfile?.avatar_url ? (
                         <img
-                          src={avatarUrl}
+                          src={userProfile.avatar_url}
                           alt="Profile"
                           className="w-full h-full object-cover"
                         />

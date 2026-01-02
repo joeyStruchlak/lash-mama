@@ -5,6 +5,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import type { User } from '@supabase/supabase-js';
 
 interface Service {
     id: string;
@@ -36,38 +37,69 @@ export function BookingWizard() {
     const [staff, setStaff] = useState<Staff[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    interface UserProfile {
+        role: 'user' | 'vip' | 'admin';
+        birthday: string | null;
+        last_booking_date: string | null;
+    }
+
     const [userId, setUserId] = useState<string | null>(null);
-    const [userProfile, setUserProfile] = useState<any>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const router = useRouter();
 
     // Fetch services and staff on mount
     useEffect(() => {
-        async function fetchData() {
-            // Get current user
-            const { data: { user } } = await supabase.auth.getUser();
+        async function fetchData(): Promise<void> {
+            try {
+                // Get current user
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-            if (user) {
-                setUserId(user.id);
+                if (userError) {
+                    console.error('Error fetching user:', userError);
+                    setLoading(false);
+                    return;
+                }
 
-                // Get user profile (for VIP status and birthday)
-                const { data: profile } = await supabase
-                    .from('users')
-                    .select('role, birthday')
-                    .eq('id', user.id)
-                    .single();
+                if (user) {
+                    setUserId(user.id);
 
-                if (profile) setUserProfile(profile);
+                    // Get user profile (for VIP status and birthday)
+                    const { data: profile, error: profileError } = await supabase
+                        .from('users')
+                        .select('role, birthday, last_booking_date')
+                        .eq('id', user.id)
+                        .single();
+
+                    if (profileError) {
+                        console.error('Error fetching profile:', profileError);
+                    } else if (profile) {
+                        setUserProfile(profile);
+                    }
+                }
+
+                // Fetch services and staff
+                const [servicesRes, staffRes] = await Promise.all([
+                    supabase.from('services').select('*').eq('is_active', true),
+                    supabase.from('staff').select('*').eq('is_active', true),
+                ]);
+
+                if (servicesRes.error) {
+                    console.error('Error fetching services:', servicesRes.error);
+                } else if (servicesRes.data) {
+                    setServices(servicesRes.data);
+                }
+
+                if (staffRes.error) {
+                    console.error('Error fetching staff:', staffRes.error);
+                } else if (staffRes.data) {
+                    setStaff(staffRes.data);
+                }
+
+            } catch (error) {
+                console.error('Unexpected error in fetchData:', error);
+            } finally {
+                setLoading(false);
             }
-
-            // Fetch services and staff
-            const [servicesRes, staffRes] = await Promise.all([
-                supabase.from('services').select('*').eq('is_active', true),
-                supabase.from('staff').select('*').eq('is_active', true),
-            ]);
-
-            if (servicesRes.data) setServices(servicesRes.data);
-            if (staffRes.data) setStaff(staffRes.data);
-            setLoading(false);
         }
 
         fetchData();
@@ -81,15 +113,15 @@ export function BookingWizard() {
             ? selectedService.base_price * selectedStaff.price_multiplier
             : 0;
 
-    const handleNext = () => {
+    const handleNext = (): void => {
         if (booking.step < 4) {
-            setBooking({ ...booking, step: ((booking.step + 1) as any) });
+            setBooking({ ...booking, step: (booking.step + 1) as 1 | 2 | 3 | 4 });
         }
     };
 
-    const handleBack = () => {
+    const handleBack = (): void => {
         if (booking.step > 1) {
-            setBooking({ ...booking, step: ((booking.step - 1) as any) });
+            setBooking({ ...booking, step: (booking.step - 1) as 1 | 2 | 3 | 4 });
         }
     };
 
@@ -101,45 +133,73 @@ export function BookingWizard() {
         );
     }
 
-    const calculateDiscount = () => {
-        if (!selectedService || userProfile?.role !== 'vip') return 0;
+    const calculateDiscount = (): number => {
+        if (!selectedService || userProfile?.role !== 'vip') {
+            return 0;
+        }
 
-        const serviceName = selectedService.name.toLowerCase();
-        const today = new Date();
-        const birthday = userProfile.birthday ? new Date(userProfile.birthday) : null;
-        const isBirthday = birthday &&
-            today.getMonth() === birthday.getMonth() &&
-            today.getDate() === birthday.getDate();
+        try {
+            const serviceName = selectedService.name.toLowerCase();
+            const today = new Date();
 
-        // VIP Discounts
-        if (serviceName.includes('refill')) {
+            let isBirthday = false;
+            if (userProfile.birthday) {
+                const birthday = new Date(userProfile.birthday);
+                if (!isNaN(birthday.getTime())) {
+                    isBirthday = today.getMonth() === birthday.getMonth() &&
+                        today.getDate() === birthday.getDate();
+                }
+            }
+
+            // VIP Discount Rules
+            const REFILL_DISCOUNT = 10;
+            const BIRTHDAY_REFILL_DISCOUNT = 20;
+            const MEGA_VOLUME_DISCOUNT = 30;
+            const VOLUME_DISCOUNT = 30;
+            const NATURAL_HYBRID_DISCOUNT = 20;
+
             // Birthday discount on refills
-            if (isBirthday) return 20;
+            if (serviceName.includes('refill') && isBirthday) {
+                return BIRTHDAY_REFILL_DISCOUNT;
+            }
+
             // Regular VIP refill discount
-            return 10;
-        }
+            if (serviceName.includes('refill')) {
+                return REFILL_DISCOUNT;
+            }
 
-        if (serviceName.includes('mega volume') && serviceName.includes('full set')) {
-            return 30;
-        }
+            // Mega Volume full sets
+            if (serviceName.includes('mega volume') && serviceName.includes('full set')) {
+                return MEGA_VOLUME_DISCOUNT;
+            }
 
-        if (serviceName.includes('volume') && serviceName.includes('full set') && !serviceName.includes('mega')) {
-            return 30;
-        }
+            // Volume full sets (not mega)
+            if (serviceName.includes('volume') &&
+                serviceName.includes('full set') &&
+                !serviceName.includes('mega')) {
+                return VOLUME_DISCOUNT;
+            }
 
-        if ((serviceName.includes('natural') || serviceName.includes('hybrid')) && serviceName.includes('full set')) {
-            return 20;
-        }
+            // Natural/Hybrid full sets
+            if ((serviceName.includes('natural') || serviceName.includes('hybrid')) &&
+                serviceName.includes('full set')) {
+                return NATURAL_HYBRID_DISCOUNT;
+            }
 
-        return 0;
+            return 0;
+
+        } catch (error) {
+            console.error('Error calculating discount:', error);
+            return 0;
+        }
     };
 
     const discountAmount = calculateDiscount();
     const discountedPrice = finalPrice - discountAmount;
 
-    const handleCompleteBooking = async () => {
+    const handleCompleteBooking = async (): Promise<void> => {
         if (!userId || !booking.serviceId || !booking.staffId || !booking.date || !booking.time) {
-            alert('Please complete all steps');
+            alert('Please complete all booking steps');
             return;
         }
 
@@ -147,7 +207,7 @@ export function BookingWizard() {
 
         try {
             // Insert appointment into database
-            const { data, error } = await supabase
+            const { data: appointmentData, error: appointmentError } = await supabase
                 .from('appointments')
                 .insert({
                     user_id: userId,
@@ -164,24 +224,68 @@ export function BookingWizard() {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (appointmentError) {
+                console.error('Error creating appointment:', appointmentError);
+                throw new Error('Failed to create appointment');
+            }
+
+            if (!appointmentData) {
+                throw new Error('No appointment data returned');
+            }
 
             // Update user's VIP streak
             const { error: streakError } = await supabase.rpc('increment_vip_streak', {
                 user_id_param: userId,
             });
 
-            if (streakError) console.error('Streak update error:', streakError);
+            if (streakError) {
+                console.error('Error updating VIP streak:', streakError);
+                // Don't throw - appointment was created successfully
+            }
 
             // Success - redirect to success page
             router.push('/booking-success');
 
             // Reset wizard
             setBooking({ step: 1 });
-        } catch (err: any) {
-            alert('Failed to save booking: ' + err.message);
+
+        } catch (error) {
+            console.error('Error in handleCompleteBooking:', error);
+            const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+            alert(`Failed to complete booking: ${errorMessage}`);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const checkRefillEligibility = (service: Service): boolean => {
+        try {
+            // If no user profile or no last booking date, allow refills (first time user)
+            if (!userProfile?.last_booking_date) {
+                return true;
+            }
+
+            const lastBookingDate = new Date(userProfile.last_booking_date);
+            const today = new Date();
+
+            // Validate date is valid
+            if (isNaN(lastBookingDate.getTime())) {
+                console.error('Invalid last_booking_date:', userProfile.last_booking_date);
+                return true; // Allow booking if date is invalid
+            }
+
+            const millisecondsPerDay = 1000 * 60 * 60 * 24;
+            const daysSinceLastBooking = Math.floor(
+                (today.getTime() - lastBookingDate.getTime()) / millisecondsPerDay
+            );
+
+            const MINIMUM_REFILL_DAYS = 14;
+            return daysSinceLastBooking >= MINIMUM_REFILL_DAYS;
+
+        } catch (error) {
+            console.error('Error checking refill eligibility:', error);
+            // Default to allowing refills if there's an error
+            return true;
         }
     };
 
@@ -231,25 +335,49 @@ export function BookingWizard() {
                                 Step 1: Select Service
                             </h2>
                             <div className="space-y-4">
-                                {services.map((service) => (
-                                    <button
-                                        key={service.id}
-                                        onClick={() =>
-                                            setBooking({ ...booking, serviceId: service.id })
-                                        }
-                                        className={`w-full p-4 text-left border-2 rounded-lg transition-all ${booking.serviceId === service.id
-                                            ? 'border-gold-600 bg-gold-50'
-                                            : 'border-gold-100 hover:border-gold-600'
-                                            }`}
-                                    >
-                                        <h3 className="font-serif font-bold text-dark">
-                                            {service.name}
-                                        </h3>
-                                        <p className="text-sm text-dark-secondary">
-                                            {service.duration} min • ${service.base_price}
-                                        </p>
-                                    </button>
-                                ))}
+                                {services.map((service) => {
+                                    const isRefill = service.name.toLowerCase().includes('refill');
+                                    const canBook = !isRefill || checkRefillEligibility(service);
+
+                                    return (
+                                        <button
+                                            key={service.id}
+                                            onClick={() => {
+                                                if (!canBook) {
+                                                    alert('Refill services require at least 14 days since your last appointment. Please choose a full set or contact the salon.');
+                                                    return;
+                                                }
+                                                setBooking({ ...booking, serviceId: service.id });
+                                            }}
+                                            disabled={!canBook}
+                                            className={`w-full p-4 text-left border-2 rounded-lg transition-all ${!canBook
+                                                ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                                                : booking.serviceId === service.id
+                                                    ? 'border-gold-600 bg-gold-50'
+                                                    : 'border-gold-100 hover:border-gold-600'
+                                                }`}
+                                        >
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h3 className="font-serif font-bold text-dark">
+                                                        {service.name}
+                                                    </h3>
+                                                    <p className="text-sm text-dark-secondary">
+                                                        {service.duration} min • ${service.base_price}
+                                                    </p>
+                                                    {isRefill && !canBook && (
+                                                        <p className="text-xs text-red-600 mt-1">
+                                                            Available 14+ days after your last appointment
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                {isRefill && !canBook && (
+                                                    <span className="text-xs text-red-600 font-bold">Not Available</span>
+                                                )}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
