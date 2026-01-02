@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/Card';
 import type { User } from '@supabase/supabase-js';
 import type { ManagerStats } from '@/types/user';
+import { DashboardSidebar } from '@/components/DashboardSidebar';
 
 export default function ManagerPage() {
   const router = useRouter();
@@ -137,8 +138,15 @@ export default function ManagerPage() {
     return null;
   }
 
-  return (
-    <div className="min-h-screen bg-gold-50 py-12">
+return (
+  <div className="flex min-h-screen bg-gold-50">
+    <DashboardSidebar 
+      userRole="manager"
+      unreadNotifications={0}
+      unreadMessages={0}
+    />
+    
+    <main className="flex-1 py-12">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="mb-12">
@@ -221,6 +229,7 @@ export default function ManagerPage() {
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </main>
+  </div>
+);
 }
