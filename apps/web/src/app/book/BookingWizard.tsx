@@ -245,7 +245,7 @@ export function BookingWizard() {
             }
 
             // Success - redirect to success page
-            router.push('/booking-success');
+            router.push(`/payment/${appointmentData.id}`);
 
             // Reset wizard
             setBooking({ step: 1 });
