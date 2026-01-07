@@ -46,13 +46,13 @@ export default function PaymentPage() {
 
             setAppointment(appointmentData);
 
-            // Check if already paid
-            const { data: existingPayment } = await supabase
+            const { data: existingPayments } = await supabase
                 .from('payments')
                 .select('*')
                 .eq('appointment_id', appointmentId)
-                .eq('status', 'completed')
-                .single();
+                .eq('status', 'completed');
+
+            const existingPayment = existingPayments && existingPayments.length > 0 ? existingPayments[0] : null;
 
             if (existingPayment) {
                 setError('This appointment has already been paid for');
@@ -251,6 +251,24 @@ function PaymentForm({ appointmentId }: { appointmentId: string }) {
             <h2 className="text-2xl font-bold text-[#2A2A2A] mb-6">
                 Payment Details
             </h2>
+
+            {/* Afterpay Badge */}
+            <div className="mb-6 p-4 bg-gradient-to-r from-teal-50 to-teal-100 border border-teal-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                            <span className="text-2xl">💳</span>
+                        </div>
+                        <div>
+                            <p className="font-semibold text-gray-900">Pay in 4 interest-free installments</p>
+                            <p className="text-sm text-gray-600">with Afterpay <span className="text-teal-600 font-medium">(coming soon)</span></p>
+                        </div>
+                    </div>
+                    <div className="text-teal-600 font-bold text-lg">
+                        $10 × 4
+                    </div>
+                </div>
+            </div>
 
             <form onSubmit={handleSubmit}>
                 <PaymentElement />
