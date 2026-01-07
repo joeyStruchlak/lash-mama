@@ -184,10 +184,23 @@ export default function PaymentPage() {
                             A $40 non-refundable deposit is required to secure your booking.
                             The remaining balance will be paid at your appointment.
                         </p>
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center mb-3">
                             <span className="text-[#3D3D3D]">Deposit Amount:</span>
                             <span className="text-2xl font-bold text-[#C9A871]">$40</span>
                         </div>
+
+                        {/* Afterpay Badge */}
+                        <div className="flex items-center justify-center gap-2 pt-3 border-t border-gray-200">
+                            <svg width="100" height="24" viewBox="0 0 100 24" fill="none">
+                                <text x="0" y="18" fontFamily="Arial, sans-serif" fontSize="16" fontWeight="bold" fill="#B2FCE4">
+                                    afterpay
+                                </text>
+                            </svg>
+                            <span className="text-xs text-[#3D3D3D]">available</span>
+                        </div>
+                        <p className="text-xs text-center text-gray-500 mt-2">
+                            Pay in 4 interest-free installments
+                        </p>
                     </div>
 
                     {/* Refund Policy */}
