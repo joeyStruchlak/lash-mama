@@ -207,6 +207,15 @@ export function BookingWizard() {
         setSaving(true);
 
         try {
+            // Check if user is admin
+            const { data: userProfile } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', userId)
+                .single();
+
+            const isAdmin = userProfile?.role === 'admin';
+
             // Insert appointment into database
             const { data: appointmentData, error: appointmentError } = await supabase
                 .from('appointments')
@@ -219,7 +228,7 @@ export function BookingWizard() {
                     total_price: discountedPrice,
                     discount_applied: discountAmount,
                     discount_type: discountAmount > 0 ? 'vip_discount' : null,
-                    status: 'pending',
+                    status: isAdmin ? 'confirmed' : 'pending', // Admin appointments auto-confirmed
                     can_reschedule: true,
                 })
                 .select()
@@ -244,8 +253,13 @@ export function BookingWizard() {
                 // Don't throw - appointment was created successfully
             }
 
-            // Success - redirect to success page
-            router.push(`/payment/${appointmentData.id}`);
+            if (isAdmin) {
+                // Admin bypass - no payment needed, go directly to success
+                router.push('/booking-success');
+            } else {
+                // Regular user - redirect to payment
+                router.push(`/payment/${appointmentData.id}`);
+            }
 
             // Reset wizard
             setBooking({ step: 1 });
