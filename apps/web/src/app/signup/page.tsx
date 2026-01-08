@@ -6,6 +6,8 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { signUp } from '@/lib/auth';
 import { validatePassword, getPasswordStrength } from '@/lib/password-validation';
+import { useSearchParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -17,6 +19,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
+  const searchParams = useSearchParams();
+  const referralCode = searchParams.get('ref');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +49,29 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await signUp(email, password, fullName);
+      const { user } = await signUp(email, password, fullName);
+
+      // If there's a referral code, link the new user to referrer
+      if (referralCode && user) {
+        // Find referrer by code
+        const { data: referrer } = await supabase
+          .from('users')
+          .select('id')
+          .eq('referral_code', referralCode.toUpperCase())
+          .single();
+
+        if (referrer) {
+          // Update new user with referrer info
+          await supabase
+            .from('users')
+            .update({ referred_by: referrer.id })
+            .eq('id', user.id);
+        }
+      }
+
+      // Show success message
+      alert('Account created! Please check your email to verify your account.');
+      router.push('/login');
 
       // Show success message
       alert('Account created! Please check your email to verify your account.');
