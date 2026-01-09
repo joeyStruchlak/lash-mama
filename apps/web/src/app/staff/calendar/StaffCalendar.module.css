@@ -1,0 +1,546 @@
+/* ========================================
+   STAFF CALENDAR - GOLD STANDARD STYLES
+   ======================================== */
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid #F8F5F0;
+  border-top: 5px solid #B8956A;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Main Calendar Card */
+.calendarCard {
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E8E3DC;
+}
+
+/* Calendar Header */
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.calendarTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #2B2B2B;
+  margin-bottom: 4px;
+}
+
+.calendarSubtitle {
+  font-size: 14px;
+  color: #6B6B6B;
+}
+
+/* Header Actions */
+.headerActions {
+  display: flex;
+  gap: 12px;
+}
+
+.filterButton {
+  padding: 10px 20px;
+  border: 1px solid #E8E3DC;
+  background: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2B2B2B;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.filterButton:hover {
+  background: #F8F5F0;
+}
+
+.newAppointmentButton {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(184, 149, 106, 0.25);
+  transition: all 0.2s;
+}
+
+.newAppointmentButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(184, 149, 106, 0.35);
+}
+
+/* View Controls */
+.viewControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dateNavigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dateTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2B2B2B;
+}
+
+.navigationButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.navButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #E8E3DC;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.navButton:hover {
+  background: #F8F5F0;
+}
+
+/* View Mode Toggles */
+.viewModeToggle {
+  display: flex;
+  gap: 8px;
+  background: #F8F5F0;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.viewModeButton {
+  padding: 8px 16px;
+  background: transparent;
+  color: #6B6B6B;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.viewModeButtonActive {
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(184, 149, 106, 0.3);
+}
+
+/* Week View */
+.weekDayHeaders {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.weekDayHeader {
+  text-align: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: #F8F5F0;
+}
+
+.weekDayHeaderToday {
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+}
+
+.weekDayName {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.weekDayNameToday {
+  color: white;
+}
+
+.weekDayNameNormal {
+  color: #6B6B6B;
+}
+
+.weekDayNumber {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+}
+
+.weekDayNumberToday {
+  color: white;
+}
+
+.weekDayNumberNormal {
+  color: #2B2B2B;
+}
+
+/* Week Grid */
+.weekGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+
+.weekDayColumn {
+  min-height: 400px;
+  padding: 16px;
+  border: 1px solid #E8E3DC;
+  border-radius: 12px;
+  background: white;
+}
+
+.weekDayColumnToday {
+  border: 2px solid #C9A872;
+}
+
+.emptyDayText {
+  font-size: 13px;
+  color: #9B9B9B;
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* Appointment Cards in Week View */
+.weekAppointmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weekAppointmentCard {
+  background: #FFF3E0;
+  border: 2px solid #FFB74D;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.weekAppointmentCardCompleted {
+  background: #E8F5E9;
+  border: 2px solid #81C784;
+}
+
+.weekAppointmentCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(184, 149, 106, 0.2);
+}
+
+.weekAppointmentTime {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.weekAppointmentTimeConfirmed {
+  color: #F57C00;
+}
+
+.weekAppointmentTimeCompleted {
+  color: #2E7D32;
+}
+
+.weekAppointmentClient {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2B2B2B;
+  margin-bottom: 2px;
+}
+
+.weekAppointmentService {
+  font-size: 11px;
+  color: #6B6B6B;
+}
+
+/* Month View */
+.monthStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.monthStatCard {
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #FFE0B2;
+}
+
+.monthStatCardAppointments {
+  background: linear-gradient(135deg, #FFF9F0 0%, #FFF3E0 100%);
+}
+
+.monthStatCardRevenue {
+  background: linear-gradient(135deg, #FFFCF8 0%, #FAF8F5 100%);
+  border: 1px solid #E8E3DC;
+}
+
+.monthStatValue {
+  font-size: 40px;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 4px;
+}
+
+.monthStatValueOrange {
+  color: #F57C00;
+}
+
+.monthStatValueGold {
+  color: #B8956A;
+}
+
+.monthStatLabel {
+  font-size: 14px;
+  color: #6B6B6B;
+  font-weight: 500;
+}
+
+/* Month Grid */
+.monthDayHeaders {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.monthDayHeader {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6B6B6B;
+  padding: 12px 0;
+}
+
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.monthDayCell {
+  min-height: 100px;
+  padding: 10px;
+  border: 1px solid #E8E3DC;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.monthDayCellToday {
+  border: 2px solid #C9A872;
+  background: linear-gradient(135deg, #FFFCF8 0%, #FAF8F5 100%);
+}
+
+.monthDayCell:hover {
+  background: #F8F5F0;
+}
+
+.monthDayCellToday:hover {
+  background: linear-gradient(135deg, #FFFCF8 0%, #FAF8F5 100%);
+}
+
+.monthDayNumber {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.monthDayNumberNormal {
+  color: #2B2B2B;
+}
+
+.monthDayNumberToday {
+  color: #C9A872;
+}
+
+.monthAppointmentDots {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.monthAppointmentDot {
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 6px;
+  border-radius: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monthAppointmentDotCompleted {
+  background: #B8956A;
+}
+
+.monthAppointmentDotConfirmed {
+  background: #FFB74D;
+}
+
+.monthAppointmentMore {
+  font-size: 9px;
+  color: #6B6B6B;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* Day View */
+.dayViewContainer {
+  background: #F8F5F0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.dayViewEmpty {
+  text-align: center;
+  color: #6B6B6B;
+  font-size: 16px;
+  padding: 40px 0;
+}
+
+.dayAppointmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dayAppointmentCard {
+  background: white;
+  border: 2px solid #E8E3DC;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dayAppointmentCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.dayAppointmentTime {
+  font-size: 20px;
+  font-weight: 700;
+  color: #C9A872;
+  margin-bottom: 8px;
+  font-family: 'Playfair Display', serif;
+}
+
+.dayAppointmentClient {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2B2B2B;
+  margin-bottom: 4px;
+}
+
+.dayAppointmentService {
+  font-size: 14px;
+  color: #6B6B6B;
+}
+
+.dayAppointmentStatus {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.dayAppointmentStatusCompleted {
+  background: #D4EDDA;
+  color: #155724;
+}
+
+.dayAppointmentStatusPending {
+  background: #FFF3CD;
+  color: #856404;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .weekGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .weekDayHeaders {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .calendarHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .viewControls {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .weekGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .weekDayHeaders {
+    grid-template-columns: 1fr;
+  }
+
+  .monthGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

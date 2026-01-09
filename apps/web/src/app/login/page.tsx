@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { signIn } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,11 +20,32 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
-      router.push('/'); // Redirect to home
+      const { user } = await signIn(email, password);
+
+      if (!user) {
+        throw new Error('Login failed');
+      }
+
+      // Check user role and redirect accordingly
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      // Smart redirect based on role
+      if (userProfile?.role === 'admin') {
+        router.push('/admin');
+      } else if (userProfile?.role === 'staff') {
+        router.push('/staff');
+      } else if (userProfile?.role === 'vip') {
+        router.push('/vip');
+      } else {
+        router.push('/dashboard'); // Regular clients
+      }
+
     } catch (err: any) {
       setError(err.message || 'Failed to login');
-    } finally {
       setLoading(false);
     }
   };

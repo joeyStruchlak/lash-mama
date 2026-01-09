@@ -1,0 +1,391 @@
+/* ========================================
+   STAFF ANALYTICS - GOLD STANDARD STYLES
+   ======================================== */
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid #F8F5F0;
+  border-top: 5px solid #B8956A;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Main Container */
+.analyticsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+/* Stat Card - Gold */
+.statCardGold {
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  border-radius: 20px;
+  padding: 32px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(184, 149, 106, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.statCardGold:hover {
+  transform: translateY(-4px);
+}
+
+.statCardGoldGlow {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+/* Stat Card - Dark */
+.statCardDark {
+  background: linear-gradient(135deg, #2B2B2B 0%, #3D3D3D 100%);
+  border-radius: 20px;
+  padding: 32px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.statCardDark:hover {
+  transform: translateY(-4px);
+}
+
+.statCardDarkGlow {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+
+/* Stat Card - White */
+.statCardWhite {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  border: 2px solid #E8E3DC;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s ease;
+}
+
+.statCardWhite:hover {
+  transform: translateY(-4px);
+}
+
+/* Stat Card - Completion Rate */
+.statCardCompletion {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  border: 2px solid #E8E3DC;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  transition: transform 0.3s ease;
+}
+
+.statCardCompletion:hover {
+  transform: translateY(-4px);
+}
+
+/* Stat Icon */
+.statIcon {
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+/* Stat Label */
+.statLabel {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.statLabelDark {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
+.statLabelWhite {
+  font-size: 14px;
+  color: #6B6B6B;
+  margin-bottom: 8px;
+}
+
+/* Stat Value */
+.statValue {
+  font-size: 44px;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  position: relative;
+}
+
+.statValueWhite {
+  color: #2B2B2B;
+}
+
+.statUnit {
+  font-size: 24px;
+}
+
+.statUnitWhite {
+  font-size: 24px;
+  color: #6B6B6B;
+}
+
+/* Circular Progress */
+.circularProgress {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.circularProgressText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.circularProgressValue {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2B2B2B;
+  font-family: 'Playfair Display', serif;
+  line-height: 1;
+}
+
+/* Completion Details */
+.completionDetails {
+  flex: 1;
+}
+
+.completionIcon {
+  margin-bottom: 8px;
+}
+
+.completionLabel {
+  font-size: 14px;
+  color: #6B6B6B;
+  margin-bottom: 4px;
+}
+
+.completionSubtext {
+  font-size: 13px;
+  color: #9B9B9B;
+}
+
+/* Chart Card */
+.chartCard {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E8E3DC;
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.chartTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #2B2B2B;
+  margin-bottom: 4px;
+}
+
+.chartSubtitle {
+  font-size: 14px;
+  color: #6B6B6B;
+}
+
+/* Chart Legend */
+.chartLegend {
+  display: flex;
+  gap: 24px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendColorScheduled {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+}
+
+.legendColorCompleted {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: #E8DCC8;
+}
+
+.legendLabel {
+  font-size: 13px;
+  color: #6B6B6B;
+  font-weight: 600;
+}
+
+/* Bar Chart */
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  height: 320px;
+  border-bottom: 2px solid #E8E3DC;
+  padding-bottom: 0;
+  position: relative;
+}
+
+.barColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.barGroup {
+  width: 100%;
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* Bar Styles */
+.barScheduled {
+  width: 45%;
+  background: linear-gradient(180deg, #C9A872 0%, #B8956A 100%);
+  border-radius: 10px 10px 0 0;
+  min-height: 0;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  box-shadow: 0 -4px 8px rgba(184, 149, 106, 0.2);
+}
+
+.barScheduled:hover {
+  transform: scaleY(1.02);
+  filter: brightness(1.1);
+}
+
+.barCompleted {
+  width: 45%;
+  background: linear-gradient(180deg, #E8DCC8 0%, #D4C8B0 100%);
+  border-radius: 10px 10px 0 0;
+  min-height: 0;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  box-shadow: 0 -4px 8px rgba(212, 200, 176, 0.2);
+}
+
+.barCompleted:hover {
+  transform: scaleY(1.02);
+  filter: brightness(0.95);
+}
+
+/* Weekend Bars */
+.barWeekend {
+  background: linear-gradient(180deg, #D0D0D0 0%, #B8B8B8 100%);
+  opacity: 0.5;
+}
+
+.barWeekendCompleted {
+  background: linear-gradient(180deg, #E0E0E0 0%, #C8C8C8 100%);
+  opacity: 0.5;
+}
+
+/* Day Label */
+.dayLabel {
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.dayLabelToday {
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+}
+
+.dayLabelWeekend {
+  background: #E8E8E8;
+}
+
+.dayText {
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.dayTextToday {
+  color: white;
+}
+
+.dayTextNormal {
+  color: #6B6B6B;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statCardCompletion {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .chartCard {
+    padding: 24px;
+  }
+
+  .barChart {
+    gap: 12px;
+  }
+}

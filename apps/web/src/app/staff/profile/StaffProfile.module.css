@@ -1,0 +1,676 @@
+/* ========================================
+   STAFF PROFILE - GOLD STANDARD STYLES
+   ======================================== */
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid #F8F5F0;
+  border-top: 5px solid #B8956A;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Main Container */
+.profileContainer {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Page Header */
+.pageHeader {
+  margin-bottom: 32px;
+}
+
+.pageTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: #2B2B2B;
+  margin-bottom: 8px;
+}
+
+.pageSubtitle {
+  font-size: 15px;
+  color: #6B6B6B;
+}
+
+/* Profile Card */
+.profileCard {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E8E3DC;
+  margin-bottom: 24px;
+}
+
+/* Avatar Section */
+.avatarSection {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 32px;
+  border-bottom: 2px solid #F8F5F0;
+  margin-bottom: 32px;
+}
+
+.avatarWrapper {
+  position: relative;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #F8F5F0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.avatarPlaceholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 48px;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  border: 4px solid #F8F5F0;
+  box-shadow: 0 4px 16px rgba(184, 149, 106, 0.3);
+}
+
+.changePhotoButton {
+  padding: 10px 20px;
+  background: white;
+  border: 2px solid #C9A872;
+  color: #B8956A;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.changePhotoButton:hover {
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(184, 149, 106, 0.25);
+}
+
+/* Form Grid */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroupFull {
+  grid-column: 1 / -1;
+}
+
+.formLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2B2B2B;
+  margin-bottom: 10px;
+}
+
+.labelIcon {
+  color: #B8956A;
+}
+
+/* Input Field */
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 2px solid #E8E3DC;
+  border-radius: 12px;
+  font-size: 15px;
+  transition: all 0.2s;
+  background: white;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #B8956A;
+  box-shadow: 0 0 0 3px rgba(184, 149, 106, 0.1);
+}
+
+.input:disabled {
+  background: #F8F5F0;
+  color: #9B9B9B;
+  cursor: not-allowed;
+}
+
+.inputDisabled {
+  background: #F8F5F0;
+  color: #9B9B9B;
+  cursor: not-allowed;
+}
+
+/* Textarea */
+.textarea {
+  flex: 1;
+  min-height: 120px;
+  padding: 14px 16px;
+  border: 2px solid #E8E3DC;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #B8956A;
+  box-shadow: 0 0 0 3px rgba(184, 149, 106, 0.1);
+}
+
+.textarea:disabled {
+  background: #F8F5F0;
+  color: #9B9B9B;
+  cursor: not-allowed;
+}
+
+/* Edit Button */
+.editButton {
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #E8E3DC;
+  color: #B8956A;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.editButton:hover {
+  border-color: #B8956A;
+  background: #F8F5F0;
+}
+
+/* Locked Badge */
+.lockedBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #F8F5F0 0%, #FAF8F5 100%);
+  border: 1px solid #E8E3DC;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B6B6B;
+}
+
+/* Save Button */
+.saveButtonWrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 24px;
+  border-top: 2px solid #F8F5F0;
+}
+
+.saveButton {
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(184, 149, 106, 0.25);
+  transition: all 0.2s;
+}
+
+.saveButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(184, 149, 106, 0.35);
+}
+
+.saveButton:disabled {
+  background: #E8E3DC;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Time Off Section */
+.timeOffCard {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E8E3DC;
+}
+
+.sectionTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2B2B2B;
+  margin-bottom: 8px;
+}
+
+.sectionSubtitle {
+  font-size: 14px;
+  color: #6B6B6B;
+  margin-bottom: 24px;
+}
+
+.requestButton {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(184, 149, 106, 0.25);
+  transition: all 0.2s;
+}
+
+.requestButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(184, 149, 106, 0.35);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .avatarSection {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+/* Time Off Requests List */
+.requestsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.requestItem {
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.requestItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.requestItemApproved {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border: 2px solid #81C784;
+}
+
+.requestItemRejected {
+  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+  border: 2px solid #E57373;
+}
+
+.requestItemPending {
+  background: linear-gradient(135deg, #FFF9E6 0%, #FFE8B3 100%);
+  border: 2px solid #FFB74D;
+}
+
+.requestInfo {
+  flex: 1;
+}
+
+.requestDate {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2B2B2B;
+  margin-bottom: 4px;
+}
+
+.requestReason {
+  font-size: 13px;
+  color: #6B6B6B;
+}
+
+.requestStatus {
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: white;
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.requestStatusApproved {
+  background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%);
+  box-shadow: 0 2px 8px rgba(56, 142, 60, 0.3);
+}
+
+.requestStatusRejected {
+  background: linear-gradient(135deg, #D32F2F 0%, #C62828 100%);
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
+.requestStatusPending {
+  background: linear-gradient(135deg, #F57C00 0%, #EF6C00 100%);
+  box-shadow: 0 2px 8px rgba(245, 124, 0, 0.3);
+}
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2B2B2B;
+}
+
+.modalCloseButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.modalCloseButton:hover {
+  background: #F8F5F0;
+  transform: rotate(90deg);
+}
+
+/* Modal Form */
+.modalFormGroup {
+  margin-bottom: 20px;
+}
+
+.modalLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2B2B2B;
+  margin-bottom: 8px;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #E8E3DC;
+  border-radius: 12px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.modalInput:focus {
+  outline: none;
+  border-color: #B8956A;
+  box-shadow: 0 0 0 3px rgba(184, 149, 106, 0.1);
+}
+
+.modalTextarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 2px solid #E8E3DC;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s;
+}
+
+.modalTextarea:focus {
+  outline: none;
+  border-color: #B8956A;
+  box-shadow: 0 0 0 3px rgba(184, 149, 106, 0.1);
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modalCancelButton {
+  flex: 1;
+  padding: 12px;
+  background: white;
+  border: 2px solid #E8E3DC;
+  color: #6B6B6B;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modalCancelButton:hover {
+  background: #F8F5F0;
+  border-color: #D0D0D0;
+}
+
+.modalSubmitButton {
+  flex: 1;
+  padding: 12px;
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  border: none;
+  color: white;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(184, 149, 106, 0.25);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.modalSubmitButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.modalSubmitButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(184, 149, 106, 0.4);
+}
+
+.modalSubmitButton:hover::before {
+  left: 100%;
+}
+
+.modalSubmitButton:active {
+  transform: translateY(0);
+}
+
+/* Premium Request Button with Gradient Animation */
+.requestButton {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #C9A872 0%, #B8956A 50%, #C9A872 100%);
+  background-size: 200% 100%;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(184, 149, 106, 0.25);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.requestButton::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.requestButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(184, 149, 106, 0.4);
+  background-position: 100% 0;
+}
+
+.requestButton:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.requestButton:active {
+  transform: translateY(0);
+}
+
+/* Time Off Card Header */
+.timeOffHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
