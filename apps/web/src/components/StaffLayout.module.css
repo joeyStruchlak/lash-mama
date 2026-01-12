@@ -1,0 +1,271 @@
+/* ========================================
+   STAFF LAYOUT - PREMIUM MOCKUP STYLING
+   ======================================== */
+
+.container {
+  min-height: 100vh;
+  background: hsl(var(--background));
+}
+
+/* Header Section - Premium Dark Card */
+.headerWrapper {
+  padding: 32px 24px 24px;
+}
+
+.headerCard {
+  background: linear-gradient(135deg, #3A3A3A 0%, #2B2B2B 100%);
+  max-width: 1400px;
+  margin: 0 auto;
+  border-radius: 24px;
+  padding: 48px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.headerCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 256px;
+  height: 256px;
+  background: hsl(37 42% 62% / 0.1);
+  border-radius: 50%;
+  filter: blur(64px);
+  z-index: 0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.headerIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px hsl(37 42% 62% / 0.35);
+  flex-shrink: 0;
+}
+
+.headerText {
+  flex: 1;
+}
+
+.headerSubtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+  font-weight: 400;
+}
+
+.headerTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: hsl(40 43% 97%);
+  margin: 0;
+}
+
+/* Stats Grid - Glass Effect Cards */
+.statsGrid {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 24px 32px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+  text-align: center;
+  flex: 1;
+  min-width: 140px;
+}
+
+.statCard:hover {
+  background: rgba(255, 255, 255, 0.09);
+  transform: translateY(-2px);
+}
+
+.statValue {
+  font-size: 48px;
+  font-weight: 700;
+  color: hsl(40 43% 97%);
+  margin-bottom: 6px;
+  font-family: 'Cormorant Garamond', serif;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+/* Content Area */
+.contentWrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 32px;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 256px 1fr;
+  gap: 24px;
+}
+
+/* Sidebar Navigation - Clean White Cards */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navItem {
+  padding: 12px 16px;
+  background: white;
+  color: hsl(0 0% 45%);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.navItem:hover {
+  background: hsl(40 33% 99%);
+  color: hsl(0 0% 17%);
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Active Nav Item - Gold Background */
+.navItemActive {
+  background: linear-gradient(135deg, hsl(37 42% 62%) 0%, hsl(37 42% 62%) 100%);
+  color: white;
+  font-weight: 600;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 16px hsl(37 42% 62% / 0.25);
+  transform: translateX(0);
+}
+
+.navItemActive:hover {
+  background: linear-gradient(135deg, hsl(37 42% 62%) 0%, hsl(37 42% 62%) 100%);
+  color: white;
+  transform: translateX(2px);
+  box-shadow: 0 6px 20px hsl(37 42% 62% / 0.35);
+}
+
+.navBadge {
+  position: absolute;
+  right: 12px;
+  background: hsl(37 42% 62%);
+  color: white;
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px hsl(37 42% 62% / 0.3);
+}
+
+.navItemActive .navBadge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .navItem {
+    flex-direction: column;
+    padding: 12px 8px;
+    gap: 6px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .navItem:hover {
+    transform: translateX(0) translateY(-2px);
+  }
+
+  .navItemActive {
+    transform: translateX(0);
+  }
+
+  .navItemActive:hover {
+    transform: translateX(0) translateY(-2px);
+  }
+
+  .headerCard {
+    padding: 32px 24px;
+  }
+
+  .headerTitle {
+    font-size: 26px;
+  }
+
+  .headerIcon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .statsGrid {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .statCard {
+    padding: 20px 24px;
+  }
+
+  .statValue {
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .headerWrapper {
+    padding: 24px 16px 16px;
+  }
+
+  .contentWrapper {
+    padding: 0 16px 24px;
+  }
+
+  .sidebar {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

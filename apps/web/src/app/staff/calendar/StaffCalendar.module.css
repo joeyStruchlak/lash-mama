@@ -1,5 +1,6 @@
 /* ========================================
-   STAFF CALENDAR - GOLD STANDARD STYLES
+   STAFF CALENDAR - EXACT MOCKUP LAYOUT
+   Colors from StaffLayout.module.css
    ======================================== */
 
 /* Loading State */
@@ -8,15 +9,17 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
+  background: hsl(var(--background));
 }
 
 .spinner {
   width: 56px;
   height: 56px;
-  border: 5px solid #F8F5F0;
-  border-top: 5px solid #B8956A;
+  border: 5px solid hsl(40 33% 99%);
+  border-top: 5px solid hsl(37 42% 62%);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-shadow: 0 4px 16px hsl(37 42% 62% / 0.3);
 }
 
 @keyframes spin {
@@ -24,229 +27,383 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Main Calendar Card */
-.calendarCard {
-  background: white;
-  border-radius: 24px;
-  padding: 32px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #E8E3DC;
+/* Main Container - Two Column Layout */
+.container {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  height: 100%;
+}
+
+/* ========================================
+   LEFT PANEL - Calendar + Stats
+   ======================================== */
+
+.leftPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* Calendar Header */
 .calendarHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .calendarTitle {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
   font-weight: 600;
-  color: #2B2B2B;
+  color: hsl(0 0% 17%);
   margin-bottom: 4px;
 }
 
 .calendarSubtitle {
-  font-size: 14px;
-  color: #6B6B6B;
+  font-size: 13px;
+  color: hsl(0 0% 45%);
+  font-weight: 400;
 }
 
-/* Header Actions */
 .headerActions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .filterButton {
-  padding: 10px 20px;
-  border: 1px solid #E8E3DC;
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid hsl(40 20% 91%);
   background: white;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #2B2B2B;
+  color: hsl(0 0% 45%);
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
 }
 
 .filterButton:hover {
-  background: #F8F5F0;
+  background: hsl(40 33% 97%);
+  border-color: hsl(37 42% 62%);
 }
 
 .newAppointmentButton {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  flex: 1;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
   color: white;
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(184, 149, 106, 0.25);
-  transition: all 0.2s;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px hsl(37 42% 62% / 0.2);
+  transition: all 0.2s ease;
 }
 
 .newAppointmentButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(184, 149, 106, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px hsl(37 42% 62% / 0.3);
 }
 
-/* View Controls */
-.viewControls {
+/* Mini Calendar */
+.miniCalendar {
+  background: white;
+  border: 1px solid hsl(40 20% 91%);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.miniHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
-.dateNavigation {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.dateTitle {
-  font-family: 'Playfair Display', serif;
-  font-size: 24px;
+.miniMonthTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
   font-weight: 600;
-  color: #2B2B2B;
+  color: hsl(0 0% 17%);
 }
 
-.navigationButtons {
+.miniNavButtons {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
-.navButton {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid #E8E3DC;
+.miniNavButton {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid hsl(40 20% 91%);
   background: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  color: hsl(0 0% 45%);
 }
 
-.navButton:hover {
-  background: #F8F5F0;
+.miniNavButton:hover {
+  background: hsl(40 33% 97%);
+  color: hsl(37 42% 62%);
 }
 
-/* View Mode Toggles */
-.viewModeToggle {
+.miniDayHeaders {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.miniDayHeader {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: hsl(0 0% 45%);
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.miniGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.miniEmptyCell {
+  height: 32px;
+}
+
+.miniDayCell {
+  height: 32px;
   display: flex;
-  gap: 8px;
-  background: #F8F5F0;
-  padding: 4px;
-  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: hsl(0 0% 17%);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-.viewModeButton {
+.miniDayCell:hover {
+  background: hsl(40 33% 97%);
+}
+
+.miniDayCellToday {
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  color: white;
+  font-weight: 700;
+}
+
+.miniDot {
+  position: absolute;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  background: hsl(37 42% 62%);
+  border-radius: 50%;
+}
+
+.miniDayCellToday .miniDot {
+  background: white;
+}
+
+/* Stats Row */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.statCard {
+  background: white;
+  border: 1px solid hsl(40 20% 91%);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 700;
+  color: hsl(37 42% 62%);
+  margin-bottom: 4px;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.statValueGold {
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.statLabel {
+  font-size: 11px;
+  color: hsl(0 0% 45%);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ========================================
+   RIGHT PANEL - Week/Day View
+   ======================================== */
+
+.rightPanel {
+  background: white;
+  border: 1px solid hsl(40 20% 91%);
+  border-radius: 16px;
+  padding: 24px;
+  overflow: auto;
+}
+
+.viewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid hsl(40 20% 91%);
+}
+
+.viewTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: hsl(0 0% 17%);
+}
+
+.viewToggle {
+  display: flex;
+  gap: 4px;
+  background: hsl(40 33% 97%);
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.viewToggleButton {
   padding: 8px 16px;
   background: transparent;
-  color: #6B6B6B;
+  color: hsl(0 0% 45%);
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
-.viewModeButtonActive {
-  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+.viewToggleButton:hover {
+  background: white;
+}
+
+.viewToggleButtonActive {
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
   color: white;
-  box-shadow: 0 2px 8px rgba(184, 149, 106, 0.3);
+  box-shadow: 0 2px 6px hsl(37 42% 62% / 0.2);
 }
 
-/* Week View */
+/* ========================================
+   WEEK VIEW - SIMPLIFIED
+   ======================================== */
+
+.weekView {
+  width: 100%;
+}
+
 .weekDayHeaders {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
 .weekDayHeader {
   text-align: center;
-  padding: 12px;
-  border-radius: 12px;
-  background: #F8F5F0;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: hsl(40 33% 97%);
+  transition: all 0.2s ease;
 }
 
 .weekDayHeaderToday {
-  background: linear-gradient(135deg, #C9A872 0%, #B8956A 100%);
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
 }
 
 .weekDayName {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   margin-bottom: 4px;
+  color: hsl(0 0% 45%);
+  text-transform: uppercase;
 }
 
-.weekDayNameToday {
+.weekDayHeaderToday .weekDayName {
   color: white;
-}
-
-.weekDayNameNormal {
-  color: #6B6B6B;
 }
 
 .weekDayNumber {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  font-family: 'Playfair Display', serif;
+  color: hsl(0 0% 17%);
+  font-family: 'Cormorant Garamond', serif;
 }
 
-.weekDayNumberToday {
+.weekDayHeaderToday .weekDayNumber {
   color: white;
 }
 
-.weekDayNumberNormal {
-  color: #2B2B2B;
-}
-
-/* Week Grid */
 .weekGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
+  gap: 8px;
 }
 
 .weekDayColumn {
-  min-height: 400px;
-  padding: 16px;
-  border: 1px solid #E8E3DC;
+  min-height: 300px;
+  padding: 8px;
+  border: 1px solid hsl(40 20% 91%);
   border-radius: 12px;
-  background: white;
+  background: hsl(40 33% 99%);
 }
 
 .weekDayColumnToday {
-  border: 2px solid #C9A872;
+  border: 2px solid hsl(37 42% 62%);
+  background: hsl(40 100% 99%);
 }
 
 .emptyDayText {
-  font-size: 13px;
-  color: #9B9B9B;
+  font-size: 12px;
+  color: hsl(0 0% 67%);
   text-align: center;
   margin-top: 40px;
+  font-style: italic;
 }
 
-/* Appointment Cards in Week View */
 .weekAppointmentsList {
   display: flex;
   flex-direction: column;
@@ -254,263 +411,640 @@
 }
 
 .weekAppointmentCard {
-  background: #FFF3E0;
-  border: 2px solid #FFB74D;
+  background: white;
+  border: 1px solid hsl(37 45% 90%);
   border-radius: 10px;
-  padding: 12px;
+  padding: 10px 12px;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.weekAppointmentCardCompleted {
-  background: #E8F5E9;
-  border: 2px solid #81C784;
+  transition: all 0.2s ease;
 }
 
 .weekAppointmentCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(184, 149, 106, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: hsl(37 42% 70%);
+  background: hsl(40 100% 99%);
 }
 
 .weekAppointmentTime {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.weekAppointmentTimeConfirmed {
-  color: #F57C00;
-}
-
-.weekAppointmentTimeCompleted {
-  color: #2E7D32;
+  color: hsl(37 42% 62%);
+  margin-bottom: 6px;
 }
 
 .weekAppointmentClient {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: #2B2B2B;
-  margin-bottom: 2px;
+  color: hsl(0 0% 17%);
+  margin-bottom: 3px;
 }
 
 .weekAppointmentService {
   font-size: 11px;
-  color: #6B6B6B;
+  color: hsl(0 0% 45%);
 }
 
-/* Month View */
-.monthStats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin-bottom: 24px;
+.weekAppointmentLocation {
+  font-size: 11px;
+  color: hsl(0 0% 45%);
 }
 
-.monthStatCard {
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid #FFE0B2;
+/* ========================================
+   DAY VIEW - SAME AS TODAY'S SCHEDULE
+   ======================================== */
+
+.dayView {
+  width: 100%;
 }
 
-.monthStatCardAppointments {
-  background: linear-gradient(135deg, #FFF9F0 0%, #FFF3E0 100%);
-}
-
-.monthStatCardRevenue {
-  background: linear-gradient(135deg, #FFFCF8 0%, #FAF8F5 100%);
-  border: 1px solid #E8E3DC;
-}
-
-.monthStatValue {
-  font-size: 40px;
-  font-weight: 700;
-  font-family: 'Playfair Display', serif;
-  margin-bottom: 4px;
-}
-
-.monthStatValueOrange {
-  color: #F57C00;
-}
-
-.monthStatValueGold {
-  color: #B8956A;
-}
-
-.monthStatLabel {
-  font-size: 14px;
-  color: #6B6B6B;
-  font-weight: 500;
-}
-
-/* Month Grid */
-.monthDayHeaders {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.monthDayHeader {
-  text-align: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: #6B6B6B;
-  padding: 12px 0;
-}
-
-.monthGrid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-}
-
-.monthDayCell {
-  min-height: 100px;
-  padding: 10px;
-  border: 1px solid #E8E3DC;
-  border-radius: 12px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.monthDayCellToday {
-  border: 2px solid #C9A872;
-  background: linear-gradient(135deg, #FFFCF8 0%, #FAF8F5 100%);
-}
-
-.monthDayCell:hover {
-  background: #F8F5F0;
-}
-
-.monthDayCellToday:hover {
-  background: linear-gradient(135deg, #FFFCF8 0%, #FAF8F5 100%);
-}
-
-.monthDayNumber {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.monthDayNumberNormal {
-  color: #2B2B2B;
-}
-
-.monthDayNumberToday {
-  color: #C9A872;
-}
-
-.monthAppointmentDots {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.monthAppointmentDot {
-  color: white;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 4px 6px;
-  border-radius: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.monthAppointmentDotCompleted {
-  background: #B8956A;
-}
-
-.monthAppointmentDotConfirmed {
-  background: #FFB74D;
-}
-
-.monthAppointmentMore {
-  font-size: 9px;
-  color: #6B6B6B;
-  font-weight: 600;
-  text-align: center;
-  margin-top: 2px;
-}
-
-/* Day View */
-.dayViewContainer {
-  background: #F8F5F0;
-  border-radius: 16px;
-  padding: 24px;
-}
-
-.dayViewEmpty {
-  text-align: center;
-  color: #6B6B6B;
-  font-size: 16px;
-  padding: 40px 0;
-}
-
-.dayAppointmentsList {
+.appointmentsList {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.dayAppointmentCard {
-  background: white;
-  border: 2px solid #E8E3DC;
+/* Appointment Card - COMPACT LIKE DASHBOARD */
+.appointmentCard {
+  background: linear-gradient(to bottom, hsl(40 100% 99%), hsl(39 100% 98%));
+  border: 1px solid hsl(37 45% 90%);
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px 20px;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.appointmentCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: hsl(37 42% 80%);
+}
+
+/* Status Badge - Top Right */
+.statusBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.statusConfirmed {
+  background: hsl(142 76% 36%);
+  color: white;
+  box-shadow: 0 2px 4px hsl(142 76% 36% / 0.3);
+}
+
+.statusPending {
+  background: hsl(38 92% 50%);
+  color: white;
+  box-shadow: 0 2px 4px hsl(38 92% 50% / 0.3);
+}
+
+/* Client Header - Horizontal Layout */
+.clientHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.clientAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid hsl(0 0% 88%);
+  flex-shrink: 0;
+}
+
+.clientAvatarPlaceholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px hsl(37 42% 62% / 0.2);
+  flex-shrink: 0;
+}
+
+.vipBadge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  background: hsl(37 42% 62%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px hsl(37 42% 62% / 0.3);
+}
+
+.clientInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.clientDetails {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.clientName {
+  font-size: 15px;
+  font-weight: 600;
+  color: hsl(0 0% 17%);
+  margin: 0;
+}
+
+/* VIP Badge - Inline with name */
+.vipMetaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: hsl(37 42% 62%);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.clientMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: hsl(0 0% 45%);
+  font-weight: 500;
+}
+
+/* Streak Badge - Small inline badge */
+.streakBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: hsl(48 96% 89%);
+  color: hsl(37 42% 38%);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  border: 1px solid hsl(45 93% 76%);
+  text-transform: uppercase;
+}
+
+/* Service Display - Horizontal inline */
+.serviceDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  margin: 0;
+  border: none;
+  min-width: 200px;
+  flex: 1;
+}
+
+.serviceIcon {
+  color: hsl(37 42% 62%);
+  flex-shrink: 0;
+}
+
+.serviceName {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(0 0% 17%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.serviceDuration {
+  font-size: 16px;
+  color: hsl(37 42% 56%);
+  font-weight: 700;
+  margin-left: 8px;
+  flex-shrink: 0;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* Action Buttons - Small inline icons */
+.actionButtons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+  margin-top: 30px;
+  position: relative;
+  z-index: 10;
+}
+
+.actionButton {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Tooltip */
+.actionButton::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  background: hsl(0 0% 17%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.actionButton:hover::after {
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+}
+
+/* Message Button - Gold */
+.messageButton {
+  background: hsl(37 42% 62%);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 6px hsl(37 42% 62% / 0.2);
+}
+
+.messageButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px hsl(37 42% 62% / 0.3);
+  background: hsl(37 42% 58%);
+}
+
+/* Aftercare Button - White with border */
+.aftercareButton {
+  background: white;
+  color: hsl(37 42% 62%);
+  border: 1px solid hsl(0 0% 88%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.aftercareButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-color: hsl(37 42% 62%);
+}
+
+/* Form Button - White with border */
+.formButton {
+  background: white;
+  color: hsl(37 42% 62%);
+  border: 1px solid hsl(0 0% 88%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.formButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-color: hsl(37 42% 62%);
+}
+
+/* Note Button - White with border */
+.noteButton {
+  background: white;
+  color: hsl(37 42% 62%);
+  border: 1px solid hsl(0 0% 88%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.noteButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-color: hsl(37 42% 62%);
+}
+
+/* ========================================
+   APPOINTMENT MODAL
+   ======================================== */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalContent {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid hsl(40 20% 91%);
+}
+
+.modalTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: hsl(0 0% 17%);
+}
+
+.modalClose {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid hsl(40 20% 91%);
+  background: white;
   cursor: pointer;
-  transition: all 0.2s;
+  font-size: 24px;
+  line-height: 1;
+  color: hsl(0 0% 45%);
+  transition: all 0.2s ease;
 }
 
-.dayAppointmentCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+.modalClose:hover {
+  background: hsl(40 33% 97%);
+  border-color: hsl(37 42% 62%);
+  color: hsl(37 42% 62%);
 }
 
-.dayAppointmentTime {
+.modalBody {
+  padding: 24px;
+}
+
+.clientSection {
+  margin-bottom: 24px;
+}
+
+.clientHeaderModal {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(to bottom, hsl(40 100% 99%), hsl(39 100% 98%));
+  border: 1px solid hsl(37 45% 90%);
+  border-radius: 16px;
+}
+
+.clientAvatarLarge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid hsl(0 0% 88%);
+}
+
+.clientAvatarPlaceholderLarge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 22px;
+  border: 3px solid white;
+  box-shadow: 0 4px 12px hsl(37 42% 62% / 0.3);
+}
+
+.vipBadgeLarge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  background: hsl(37 42% 62%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid white;
+  box-shadow: 0 2px 6px hsl(37 42% 62% / 0.3);
+}
+
+.modalClientName {
   font-size: 20px;
   font-weight: 700;
-  color: #C9A872;
-  margin-bottom: 8px;
-  font-family: 'Playfair Display', serif;
-}
-
-.dayAppointmentClient {
-  font-size: 18px;
-  font-weight: 600;
-  color: #2B2B2B;
+  color: hsl(0 0% 17%);
   margin-bottom: 4px;
 }
 
-.dayAppointmentService {
-  font-size: 14px;
-  color: #6B6B6B;
+.modalServiceName {
+  font-size: 15px;
+  color: hsl(0 0% 45%);
+  margin-bottom: 4px;
 }
 
-.dayAppointmentStatus {
-  padding: 8px 16px;
-  border-radius: 10px;
+.modalTime {
+  font-size: 16px;
+  font-weight: 700;
+  color: hsl(37 42% 62%);
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.notesSection {
+  margin-bottom: 24px;
+}
+
+.notesLabel {
+  display: block;
   font-size: 13px;
   font-weight: 600;
-  text-transform: capitalize;
+  color: hsl(0 0% 17%);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.dayAppointmentStatusCompleted {
-  background: #D4EDDA;
-  color: #155724;
+.notesTextarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid hsl(40 20% 91%);
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: hsl(0 0% 17%);
+  resize: vertical;
+  transition: all 0.2s ease;
 }
 
-.dayAppointmentStatusPending {
-  background: #FFF3CD;
-  color: #856404;
+.notesTextarea:focus {
+  outline: none;
+  border-color: hsl(37 42% 62%);
+  box-shadow: 0 0 0 3px hsl(37 42% 62% / 0.1);
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
+.notesTextarea::placeholder {
+  color: hsl(0 0% 67%);
+}
+
+.modalActions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.modalActionButton {
+  padding: 12px;
+  background: white;
+  border: 1px solid hsl(40 20% 91%);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(0 0% 45%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.modalActionButton:hover {
+  background: hsl(40 33% 97%);
+  border-color: hsl(37 42% 62%);
+  color: hsl(37 42% 62%);
+  transform: translateY(-2px);
+}
+
+.saveNoteButton {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px hsl(37 42% 62% / 0.3);
+  transition: all 0.2s ease;
+}
+
+.saveNoteButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px hsl(37 42% 62% / 0.4);
+  filter: brightness(1.05);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 1400px) {
+  .weekGrid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .weekDayHeaders {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 280px 1fr;
+  }
+
+  .weekGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .weekDayHeaders {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 968px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
   .weekGrid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -518,29 +1052,55 @@
   .weekDayHeaders {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .appointmentCard {
+    padding-right: 24px;
+  }
+
+  .actionButtons {
+    margin-right: 0;
+    flex-wrap: wrap;
+  }
+
+  .statusBadge {
+    position: static;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+
+  .modalContent {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .modalActions {
+    grid-template-columns: 1fr;
+  }
+
+  .clientHeaderModal {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
-@media (max-width: 768px) {
-  .calendarHeader {
+@media (max-width: 640px) {
+  .weekGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .weekDayHeaders {
+    grid-template-columns: 1fr;
+  }
+
+  .appointmentCard {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    padding: 16px;
   }
 
-  .viewControls {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .weekGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .weekDayHeaders {
-    grid-template-columns: 1fr;
-  }
-
-  .monthGrid {
-    grid-template-columns: repeat(4, 1fr);
+  .actionButtons {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
   }
 }

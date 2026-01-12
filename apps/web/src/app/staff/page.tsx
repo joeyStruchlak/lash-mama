@@ -3,15 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Calendar, MessageCircle, Gift, FileText, Crown, Star, Users, Cake, ChevronDown } from 'lucide-react';
+import { Calendar, MessageCircle, Gift, FileText, Crown, Star, Users, Cake } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './StaffDashboard.module.css';
 
 export default function StaffDashboard() {
   const [upcomingAppointments, setUpcomingAppointments] = useState<any[]>([]);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [note, setNote] = useState('');
 
   useEffect(() => {
     fetchStaffData();
@@ -24,8 +25,6 @@ export default function StaffDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      console.log('🔐 Current user:', user.id, user.email);
-
       const { data: staffProfile } = await supabase
         .from('staff')
         .select('id')
@@ -37,42 +36,32 @@ export default function StaffDashboard() {
         return;
       }
 
-      console.log('👤 Staff profile ID:', staffProfile.id);
-
       const today = new Date().toISOString().split('T')[0];
-      console.log('📅 Today date:', today);
 
       const { data: appointments, error } = await supabase
         .from('appointments')
         .select(`
-    *,
-    service:service_id(name, duration),
-    user:user_id(
-      full_name, 
-      avatar_url,
-      is_vip,
-      vip_streak,
-      referral_count,
-      birthday,
-      created_at
-    )
-  `)
+          *,
+          service:service_id(name, duration),
+          user:user_id(
+            full_name, 
+            avatar_url,
+            is_vip,
+            vip_streak,
+            referral_count,
+            birthday,
+            created_at
+          )
+        `)
         .eq('staff_id', staffProfile.id)
         .eq('appointment_date', today)
         .eq('status', 'confirmed')
         .order('appointment_time', { ascending: true })
-        .limit(10); // Changed from 5 to 10
+        .limit(10);
 
-      console.log('🔍 Query returned appointments:', appointments?.length || 0);
-      console.log('📋 Raw appointments:', appointments);
-      console.log('❌ Any errors?:', error);
-
-      // For each appointment, get the user's last visit
       if (appointments) {
         const enrichedAppointments = await Promise.all(
           appointments.map(async (apt: any) => {
-            console.log('✨ Processing:', apt.user?.full_name, 'Time:', apt.appointment_time);
-
             const { data: previousApts } = await supabase
               .from('appointments')
               .select('appointment_date')
@@ -89,7 +78,6 @@ export default function StaffDashboard() {
           })
         );
 
-        console.log('📅 FINAL enriched appointments:', enrichedAppointments);
         setUpcomingAppointments(enrichedAppointments);
       }
     } catch (err) {
@@ -133,33 +121,34 @@ export default function StaffDashboard() {
     router.push(`/staff/messages?clientId=${clientId}&clientName=${clientName}`);
   }
 
+  function openAppointmentModal(apt: any) {
+    setSelectedAppointment(apt);
+    setNote(apt.notes || '');
+    setShowModal(true);
+  }
+
+  async function handleSaveNote(appointmentId: string) {
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ notes: note })
+        .eq('id', appointmentId);
+
+      if (error) throw error;
+
+      alert('Note saved successfully!');
+      setShowModal(false);
+      fetchStaffData();
+    } catch (err) {
+      console.error('Error saving note:', err);
+      alert('Failed to save note');
+    }
+  }
+
   function formatBirthday(birthday: string | null): string {
     if (!birthday) return 'Not set';
     const date = new Date(birthday);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-
-  function formatLastVisit(lastVisit: string | null): { text: string; isFirst: boolean } {
-    if (!lastVisit) {
-      return { text: '1st Visit', isFirst: true };
-    }
-    const date = new Date(lastVisit);
-    return {
-      text: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      isFirst: false
-    };
-  }
-
-  function toggleExpanded(aptId: string) {
-    setExpandedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(aptId)) {
-        newSet.delete(aptId);
-      } else {
-        newSet.add(aptId);
-      }
-      return newSet;
-    });
   }
 
   if (loading) {
@@ -175,12 +164,8 @@ export default function StaffDashboard() {
       <div className={styles.scheduleCard}>
         <div className={styles.scheduleHeader}>
           <div>
-            <h2 className={styles.scheduleTitle}>
-              Today's Schedule
-            </h2>
-            <p className={styles.scheduleSubtitle}>
-              Your appointments for today
-            </p>
+            <h2 className={styles.scheduleTitle}>Today's Schedule</h2>
+            <p className={styles.scheduleSubtitle}>Your appointments for today</p>
           </div>
           <Link href="/staff/calendar" className={styles.viewCalendarButton}>
             <Calendar size={16} />
@@ -196,40 +181,22 @@ export default function StaffDashboard() {
         ) : (
           <div className={styles.appointmentsList}>
             {upcomingAppointments.map((apt: any) => {
-              const isExpanded = expandedCards.has(apt.id);
               const isVip = apt.user?.is_vip || false;
-              const streak = apt.user?.vip_streak || 0; // Changed from booking_streak
+              const streak = apt.user?.vip_streak || 0;
               const referrals = apt.user?.referral_count || 0;
               const birthday = apt.user?.birthday;
               const memberSince = apt.user?.created_at
                 ? new Date(apt.user.created_at).getFullYear()
                 : new Date().getFullYear();
-              const lastVisitData = formatLastVisit(apt.lastVisit);
 
               return (
-                <div
-                  key={apt.id}
-                  className={styles.appointmentCard}
-                  onClick={() => toggleExpanded(apt.id)}
-                >
-                  <span className={`${styles.statusBadge} ${apt.status === 'confirmed' ? styles.statusConfirmed : styles.statusPending
+                <div key={apt.id} className={styles.appointmentCard} onClick={() => openAppointmentModal(apt)}>
+                  <span className={`${styles.statusBadge} ${apt.status === 'confirmed' ? styles.statusConfirmed :
+                    apt.status === 'cancelled' ? styles.statusCancelled :
+                      styles.statusPending
                     }`}>
                     {apt.status}
                   </span>
-
-                  <button
-                    className={styles.expandToggle}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleExpanded(apt.id);
-                    }}
-                    style={{
-                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                      transition: 'transform 0.3s'
-                    }}
-                  >
-                    <ChevronDown size={18} />
-                  </button>
 
                   {/* Client Header */}
                   <div className={styles.clientHeader}>
@@ -247,134 +214,167 @@ export default function StaffDashboard() {
                       )}
                       {isVip && (
                         <div className={styles.vipBadge}>
-                          <Crown size={16} />
+                          <Crown size={12} />
                         </div>
                       )}
                     </div>
 
                     <div className={styles.clientInfo}>
                       <div className={styles.clientDetails}>
-                        <div className={styles.clientName}>
+                        <span className={styles.clientName}>
                           {apt.user?.full_name}
-
-                        </div>
-                        <div className={styles.clientMeta}>
-                          <span className={styles.metaItem}>
-                            Member since {memberSince}
+                        </span>
+                        {isVip && (
+                          <span className={styles.vipMetaBadge}>
+                            <Crown size={10} fill="currentColor" />
+                            VIP
                           </span>
-                          {isVip && (
-                            <span className={styles.vipMetaBadge}>
-                              <Crown size={12} fill="currentColor" />
-                              VIP
-                            </span>
-                          )}
-                          {streak > 0 && (
-                            <span className={styles.streakBadge}>
-                              <Star size={14} fill="currentColor" />
-                              {streak} streak
-                            </span>
-                          )}
-                          {referrals > 0 && (
-                            <span className={styles.metaItem}>
-                              <Users size={14} />
-                              {referrals} referrals
-                            </span>
-                          )}
-                          {birthday && (
-                            <span className={styles.metaItem}>
-                              <Cake size={14} />
-                              Birthday: {formatBirthday(birthday)}
-                            </span>
-                          )}
-                        </div>
+                        )}
+                        {streak > 0 && (
+                          <span className={styles.streakBadge}>
+                            <Star size={10} fill="currentColor" />
+                            {streak} streak
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.clientMeta}>
+                        <span className={styles.metaItem}>
+                          Member since {memberSince}
+                        </span>
+                        {referrals > 0 && (
+                          <span className={styles.metaItem}>
+                            <Users size={12} />
+                            {referrals} referrals
+                          </span>
+                        )}
+                        {birthday && (
+                          <span className={styles.metaItem}>
+                            <Cake size={12} />
+                            {formatBirthday(birthday)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
 
                   {/* Service Display */}
                   <div className={styles.serviceDisplay}>
-                    <Star size={20} className={styles.serviceIcon} />
+                    <Star size={16} className={styles.serviceIcon} />
                     <span className={styles.serviceName}>{apt.service?.name}</span>
                     <span className={styles.serviceDuration}>
-                      {calculateDuration(apt.service?.duration)}
+                      {formatTime(apt.appointment_time)}
                     </span>
                   </div>
 
-                  {/* Stats Grid - Only show when expanded */}
-                  {isExpanded && (
-                    <>
-                      <div className={styles.statsGrid}>
-                        <div className={styles.statCard}>
-                          <div className={styles.statValue}>{formatTime(apt.appointment_time)}</div>
-                          <div className={styles.statLabel}>Appointment Time</div>
-                        </div>
-                        {streak > 0 && (
-                          <div className={styles.statCard}>
-                            <div className={styles.statValue}>{streak}</div>
-                            <div className={styles.statLabel}>Booking Streak</div>
-                          </div>
-                        )}
-                        {referrals > 0 && (
-                          <div className={styles.statCard}>
-                            <div className={styles.statValue}>{referrals}</div>
-                            <div className={styles.statLabel}>Friends Referred</div>
-                          </div>
-                        )}
-                        <div className={styles.statCard}>
-                          {lastVisitData.isFirst ? (
-                            <>
-                              <div className={styles.statValue} style={{ fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                                <Star size={18} fill="#C9A871" />
-                                {lastVisitData.text}
-                              </div>
-                              <div className={styles.statLabel}>First Visit</div>
-                            </>
-                          ) : (
-                            <>
-                              <div className={styles.statValue} style={{ fontSize: '14px' }}>
-                                {lastVisitData.text}
-                              </div>
-                              <div className={styles.statLabel}>Last Visit</div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className={styles.actionButtons}>
-                        <button
-                          className={`${styles.actionButton} ${styles.aftercareButton}`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Gift size={18} />
-                          Aftercare
-                        </button>
-                        <button
-                          className={`${styles.actionButton} ${styles.messageButton}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMessageClient(apt.user_id, apt.user?.full_name);
-                          }}
-                        >
-                          <MessageCircle size={18} />
-                          Message
-                        </button>
-                        <button
-                          className={`${styles.actionButton} ${styles.formButton}`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <FileText size={18} />
-                          Allergy Form
-                        </button>
-                      </div>
-                    </>
-                  )}
+                  {/* Action Buttons */}
+                  <div className={styles.actionButtons}>
+                    <button
+                      className={`${styles.actionButton} ${styles.messageButton}`}
+                      data-tooltip="Message"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMessageClient(apt.user_id, apt.user?.full_name);
+                      }}
+                    >
+                      <MessageCircle size={18} />
+                    </button>
+                    <button
+                      className={`${styles.actionButton} ${styles.aftercareButton}`}
+                      data-tooltip="Aftercare"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Gift size={18} />
+                    </button>
+                    <button
+                      className={`${styles.actionButton} ${styles.formButton}`}
+                      data-tooltip="Allergy Form"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <FileText size={18} />
+                    </button>
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
       </div>
+      {/* Appointment Detail Modal */}
+      {showModal && selectedAppointment && (
+        <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Appointment Details</h3>
+              <button className={styles.modalClose} onClick={() => setShowModal(false)}>×</button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.clientSection}>
+                <div className={styles.clientHeaderModal}>
+                  <div style={{ position: 'relative' }}>
+                    {selectedAppointment.user?.avatar_url ? (
+                      <img src={selectedAppointment.user.avatar_url} alt={selectedAppointment.user.full_name} className={styles.clientAvatarLarge} />
+                    ) : (
+                      <div className={styles.clientAvatarPlaceholderLarge}>
+                        {getInitials(selectedAppointment.user?.full_name || 'U')}
+                      </div>
+                    )}
+                    {selectedAppointment.user?.is_vip && (
+                      <div className={styles.vipBadgeLarge}>
+                        <Crown size={16} />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className={styles.modalClientName}>{selectedAppointment.user?.full_name}</h4>
+                    <p className={styles.modalServiceName}>{selectedAppointment.service?.name}</p>
+                    <p className={styles.modalTime}>{formatTime(selectedAppointment.appointment_time)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.notesSection}>
+                <label className={styles.notesLabel}>Staff Notes</label>
+                <textarea
+                  className={styles.notesTextarea}
+                  placeholder="Add private notes about this appointment..."
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={4}
+                />
+              </div>
+
+              <div className={styles.modalActions}>
+                <button
+                  className={styles.modalActionButton}
+                  onClick={() => {
+                    handleMessageClient(selectedAppointment.user_id, selectedAppointment.user?.full_name);
+                    setShowModal(false);
+                  }}
+                >
+                  <MessageCircle size={18} />
+                  Message
+                </button>
+                <button className={styles.modalActionButton}>
+                  <Gift size={18} />
+                  Aftercare
+                </button>
+                <button className={styles.modalActionButton}>
+                  <FileText size={18} />
+                  Allergy Form
+                </button>
+              </div>
+
+              <button
+                className={styles.saveNoteButton}
+                onClick={() => handleSaveNote(selectedAppointment.id)}
+              >
+                Save Note
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
