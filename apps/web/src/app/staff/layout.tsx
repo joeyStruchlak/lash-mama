@@ -1,4 +1,4 @@
-import StaffLayout from '@/components/StaffLayout';
+import StaffLayout from '@/components/StaffLayout/StaffLayout';
 
 export default function StaffPagesLayout({
   children,

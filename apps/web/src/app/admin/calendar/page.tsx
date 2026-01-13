@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { DashboardSidebar } from '@/components/DashboardSidebar';
-import { CalendarHeader } from '@/components/calendar/CalendarHeader';
-import { MonthView } from '@/components/calendar/MonthView';
-import { WeekView } from '@/components/calendar/WeekView';
-import { DayView } from '@/components/calendar/DayView';
-import { ListView } from '@/components/calendar/ListView';
+import { CalendarHeader } from '@/components/Calendar/CalendarHeader';
+import { MonthView } from '@/components/Calendar/MonthView';
+import { WeekView } from '@/components/Calendar/WeekView';
+import { DayView } from '@/components/Calendar/DayView';
+import { ListView } from '@/components/Calendar/ListView';
 import type { User } from '@supabase/supabase-js';
 import type { CalendarAppointment } from '@/types/calendar';
 
