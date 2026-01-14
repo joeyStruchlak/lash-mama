@@ -86,7 +86,7 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
 const navItems = [
   { icon: CalendarDays, label: 'Dashboard', path: '/staff' },
   { icon: Calendar, label: 'Calendar', path: '/staff/calendar' },
-  { icon: BarChart3, label: 'Analytics', path: '/staff/hours' },
+  { icon: BarChart3, label: 'My Hours', path: '/staff/hours' },
   { icon: MessageCircle, label: 'Messages', path: '/staff/messages', badge: unreadMessages },
   { icon: FileText, label: 'Notes', path: '/staff/notes' },
   { icon: User, label: 'Profile', path: '/staff/profile' }

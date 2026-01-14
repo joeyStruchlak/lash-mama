@@ -1,23 +1,20 @@
+// Base interfaces matching public.messages schema
 export interface Message {
   id: string;
-  conversation_id: string;
-  sender_id: string;
-  sender_name?: string; // Joined from users
-  sender_role?: string; // Joined from users
+  conversation_id: string | null;
+  sender_id: string | null;
   message_text: string;
   attachment_url?: string | null;
-  attachment_type?: 'image' | 'file' | null;
+  attachment_type?: string | null;
   read_at?: string | null;
   created_at: string;
 }
 
 export interface Conversation {
   id: string;
-  type: 'direct' | 'group';
-  participants: string[]; // Array of user IDs
+  type: string;
   appointment_id?: string | null;
   last_message_at?: string | null;
-  last_message_text?: string | null;
   created_at: string;
 }
 
@@ -25,16 +22,35 @@ export interface ConversationParticipant {
   id: string;
   conversation_id: string;
   user_id: string;
-  user_name?: string; // Joined from users
-  user_role?: string; // Joined from users
-  user_avatar?: string | null; // Joined from users
   joined_at: string;
   last_read_at?: string | null;
   muted: boolean;
 }
 
+export interface MessageWithSender extends Message {
+  sender?: {
+    full_name: string;
+    avatar_url?: string;
+    role?: string;
+  };
+}
+
 export interface ConversationWithDetails extends Conversation {
-  participants_details: ConversationParticipant[];
+  other_user?: {
+    id: string;
+    full_name: string;
+    email: string;
+    role: string;
+    avatar_url?: string;
+  };
+  last_message_text?: string;
   unread_count: number;
-  other_participant?: ConversationParticipant; // For direct chats
+}
+
+export interface User {
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  avatar_url?: string;
 }
