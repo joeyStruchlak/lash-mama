@@ -180,3 +180,16 @@ export async function getUnreadCount(userId: string): Promise<number> {
     return 0;
   }
 }
+
+// Send note reminder notification
+export async function sendNoteReminderNotification(
+  userId: string,
+  noteText: string
+): Promise<void> {
+  await createNotification({
+    user_id: userId,
+    type: 'reminder',
+    title: '📝 Note Reminder',
+    message: noteText.length > 100 ? noteText.substring(0, 100) + '...' : noteText,
+  });
+}

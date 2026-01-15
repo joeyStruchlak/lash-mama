@@ -1,7 +1,7 @@
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'booking_confirmed' | 'payment_received' | 'reminder_24h' | 'reminder_2h' | 'booking_cancelled' | 'vip_achieved' | 'general';
+  type: 'booking_confirmed' | 'payment_received' | 'reminder_24h' | 'reminder_2h' | 'booking_cancelled' | 'vip_achieved' | 'reminder' | 'general';
   title: string;
   message: string;
   related_appointment_id?: string | null;

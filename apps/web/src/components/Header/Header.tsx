@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { signOut } from '@/lib/auth';
 import { Bell, Calendar, Menu, X, Crown, Sparkles } from 'lucide-react';
-import { getUnreadCount } from '@/lib/notifications';
+import { getUnreadCount, markAllAsRead } from '@/lib/notifications';
 import type { User } from '@supabase/supabase-js';
 import type { UserRole } from '@/types/user';
 import type { NotificationWithDetails } from '@/types/notification';
@@ -54,15 +54,45 @@ export function Header() {
     };
   }, []);
 
+  // Real-time notifications subscription
   useEffect(() => {
-    if (user) {
-      const interval = setInterval(() => {
-        fetchUnreadCount(user.id);
-        fetchRecentNotifications(user.id);
-      }, 30000);
+    if (!user) return;
 
-      return () => clearInterval(interval);
-    }
+    // Initial fetch
+    fetchUnreadCount(user.id);
+    fetchRecentNotifications(user.id);
+
+    // Subscribe to new notifications
+    const channel = supabase
+      .channel(`notifications:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+
+          // Refresh counts and notifications immediately
+          fetchUnreadCount(user.id);
+          fetchRecentNotifications(user.id);
+        }
+      )
+      .subscribe((status) => {
+      });
+
+    // Also keep polling as backup (every 60 seconds instead of 30)
+    const interval = setInterval(() => {
+      fetchUnreadCount(user.id);
+      fetchRecentNotifications(user.id);
+    }, 60000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
   }, [user]);
 
   async function loadUser() {
@@ -207,7 +237,16 @@ export function Header() {
                   <div style={{ position: 'relative' }}>
                     <button
                       className={styles.notificationButton}
-                      onClick={() => setShowNotifications(!showNotifications)}
+                      onClick={async () => {
+                        setShowNotifications(!showNotifications);
+
+                        // Mark all as read when opening dropdown
+                        if (!showNotifications && user && unreadCount > 0) {
+                          await markAllAsRead(user.id);
+                          fetchUnreadCount(user.id);
+                          fetchRecentNotifications(user.id);
+                        }
+                      }}
                     >
                       <Bell size={20} />
                       {unreadCount > 0 && (
@@ -280,7 +319,6 @@ export function Header() {
                     )}
                   </div>
 
-                  {/* User Avatar */}
                   {/* User Profile Dropdown */}
                   <div style={{ position: 'relative' }}>
                     <button

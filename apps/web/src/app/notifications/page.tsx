@@ -17,6 +17,45 @@ export default function NotificationsPage() {
     fetchNotifications();
   }, [filter]);
 
+  // Real-time subscription
+  useEffect(() => {
+    let channel: any;
+
+    async function setupSubscription() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      console.log('📡 Setting up real-time for notifications page');
+
+      channel = supabase
+        .channel(`notifications-page:${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('🔔 Notification changed:', payload);
+            fetchNotifications();
+          }
+        )
+        .subscribe();
+    }
+
+    setupSubscription();
+
+    return () => {
+      if (channel) {
+        console.log('🛑 Unsubscribing from notifications page');
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [filter]);
+
   async function fetchNotifications(): Promise<void> {
     try {
       setLoading(true);
@@ -100,7 +139,7 @@ export default function NotificationsPage() {
     if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    
+
     return date.toLocaleDateString('en-AU', {
       day: 'numeric',
       month: 'short',
@@ -142,21 +181,19 @@ export default function NotificationsPage() {
           <div className="flex gap-2">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
-                filter === 'all'
-                  ? 'bg-[#C9A871] text-white'
-                  : 'bg-gray-100 text-[#3D3D3D] hover:bg-gray-200'
-              }`}
+              className={`px-4 py-2 rounded-lg font-medium transition ${filter === 'all'
+                ? 'bg-[#C9A871] text-white'
+                : 'bg-gray-100 text-[#3D3D3D] hover:bg-gray-200'
+                }`}
             >
               All
             </button>
             <button
               onClick={() => setFilter('unread')}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
-                filter === 'unread'
-                  ? 'bg-[#C9A871] text-white'
-                  : 'bg-gray-100 text-[#3D3D3D] hover:bg-gray-200'
-              }`}
+              className={`px-4 py-2 rounded-lg font-medium transition ${filter === 'unread'
+                ? 'bg-[#C9A871] text-white'
+                : 'bg-gray-100 text-[#3D3D3D] hover:bg-gray-200'
+                }`}
             >
               Unread {unreadCount > 0 && `(${unreadCount})`}
             </button>
@@ -181,7 +218,7 @@ export default function NotificationsPage() {
               {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              {filter === 'unread' 
+              {filter === 'unread'
                 ? "You're all caught up!"
                 : "We'll notify you about bookings, reminders, and more"}
             </p>
@@ -191,9 +228,8 @@ export default function NotificationsPage() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-200 ${
-                  !notification.is_read ? 'border-l-4 border-[#C9A871]' : ''
-                }`}
+                className={`bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-200 ${!notification.is_read ? 'border-l-4 border-[#C9A871]' : ''
+                  }`}
               >
                 <div className="flex items-start gap-4">
                   <div className="text-3xl flex-shrink-0">
