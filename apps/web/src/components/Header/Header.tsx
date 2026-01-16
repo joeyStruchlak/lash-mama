@@ -29,7 +29,9 @@ export function Header() {
   useEffect(() => {
     loadUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         await loadUserProfile(session.user.id);
@@ -43,14 +45,23 @@ export function Header() {
     });
 
     const handleAvatarUpdate = () => {
+      console.log('🔄 Avatar updated');
       loadUser();
     };
 
+    // ⚡ Listen for profile updates from Profile page
+    const handleProfileUpdate = (event: CustomEvent) => {
+      console.log('🔄 Profile updated, refreshing header...', event.detail);
+      loadUser(); // Refetch fresh data from Supabase
+    };
+
     window.addEventListener('avatar-updated', handleAvatarUpdate);
+    window.addEventListener('profileUpdate', handleProfileUpdate as EventListener);
 
     return () => {
       subscription.unsubscribe();
       window.removeEventListener('avatar-updated', handleAvatarUpdate);
+      window.removeEventListener('profileUpdate', handleProfileUpdate as EventListener);
     };
   }, []);
 
@@ -71,17 +82,15 @@ export function Header() {
           event: '*', // Listen to INSERT, UPDATE, DELETE
           schema: 'public',
           table: 'notifications',
-          filter: `user_id=eq.${user.id}`
+          filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-
           // Refresh counts and notifications immediately
           fetchUnreadCount(user.id);
           fetchRecentNotifications(user.id);
         }
       )
-      .subscribe((status) => {
-      });
+      .subscribe((status) => {});
 
     // Also keep polling as backup (every 60 seconds instead of 30)
     const interval = setInterval(() => {
@@ -97,7 +106,9 @@ export function Header() {
 
   async function loadUser() {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
         await loadUserProfile(user.id);
@@ -283,8 +294,9 @@ export function Header() {
                                   key={notification.id}
                                   href="/notifications"
                                   onClick={() => setShowNotifications(false)}
-                                  className={`${styles.notificationItem} ${!notification.is_read ? styles.notificationItemUnread : ''
-                                    }`}
+                                  className={`${styles.notificationItem} ${
+                                    !notification.is_read ? styles.notificationItemUnread : ''
+                                  }`}
                                 >
                                   <div className={styles.notificationIcon}>
                                     {getNotificationIcon(notification.type)}
@@ -344,10 +356,24 @@ export function Header() {
                         )}
                       </div>
                       <span className={styles.userName}>
-                        {userProfile?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'}
+                        {userProfile?.full_name?.split(' ')[0] ||
+                          user.email?.split('@')[0] ||
+                          'User'}
                       </span>
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={styles.dropdownArrow}>
-                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        className={styles.dropdownArrow}
+                      >
+                        <path
+                          d="M3 4.5L6 7.5L9 4.5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     </button>
 
@@ -393,7 +419,14 @@ export function Header() {
                             className={styles.userDropdownItem}
                             onClick={() => setShowUserMenu(false)}
                           >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                               <circle cx="12" cy="7" r="4" />
                             </svg>
@@ -405,7 +438,14 @@ export function Header() {
                             className={styles.userDropdownItem}
                             onClick={() => setShowUserMenu(false)}
                           >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <rect x="3" y="3" width="7" height="7" />
                               <rect x="14" y="3" width="7" height="7" />
                               <rect x="14" y="14" width="7" height="7" />
@@ -435,7 +475,14 @@ export function Header() {
                             }}
                             className={styles.userDropdownItemDanger}
                           >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                               <polyline points="16 17 21 12 16 7" />
                               <line x1="21" y1="12" x2="9" y2="12" />
@@ -474,7 +521,11 @@ export function Header() {
               <Link href="/" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
                 Home
               </Link>
-              <Link href="/services" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
+              <Link
+                href="/services"
+                className={styles.navLink}
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Services
               </Link>
               <Link href="/book" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
@@ -511,9 +562,7 @@ export function Header() {
                         </div>
                       )}
                     </div>
-                    <p className={styles.mobileUserName}>
-                      {userProfile?.full_name || user.email}
-                    </p>
+                    <p className={styles.mobileUserName}>{userProfile?.full_name || user.email}</p>
                   </div>
 
                   {unreadCount > 0 && (
@@ -536,10 +585,18 @@ export function Header() {
 
               {!user && (
                 <div className={styles.mobileUserSection}>
-                  <Link href="/login" className={styles.loginButton} onClick={() => setIsMenuOpen(false)}>
+                  <Link
+                    href="/login"
+                    className={styles.loginButton}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     Login
                   </Link>
-                  <Link href="/signup" className={styles.signupButton} onClick={() => setIsMenuOpen(false)}>
+                  <Link
+                    href="/signup"
+                    className={styles.signupButton}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     Sign Up
                   </Link>
                 </div>
