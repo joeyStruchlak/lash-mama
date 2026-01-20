@@ -1,0 +1,246 @@
+/* Shared Appointment Modal Styles */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalContent {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid hsl(40 20% 91%);
+}
+
+.modalTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: hsl(0 0% 17%);
+}
+
+.modalClose {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid hsl(40 20% 91%);
+  background: white;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  color: hsl(0 0% 45%);
+  transition: all 0.2s ease;
+}
+
+.modalClose:hover {
+  background: hsl(40 33% 97%);
+  border-color: hsl(37 42% 62%);
+  color: hsl(37 42% 62%);
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.clientSection {
+  margin-bottom: 24px;
+}
+
+.clientHeaderModal {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(to bottom, hsl(40 100% 99%), hsl(39 100% 98%));
+  border: 1px solid hsl(37 45% 90%);
+  border-radius: 16px;
+}
+
+.clientAvatarLarge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid hsl(0 0% 88%);
+}
+
+.clientAvatarPlaceholderLarge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 22px;
+  border: 3px solid white;
+  box-shadow: 0 4px 12px hsl(37 42% 62% / 0.3);
+}
+
+.vipBadgeLarge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  background: hsl(37 42% 62%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid white;
+  box-shadow: 0 2px 6px hsl(37 42% 62% / 0.3);
+}
+
+.modalClientName {
+  font-size: 20px;
+  font-weight: 700;
+  color: hsl(0 0% 17%);
+  margin-bottom: 4px;
+}
+
+.modalServiceName {
+  font-size: 20px;
+  font-weight: 700;
+  color: hsl(0 0% 17%);
+  margin-bottom: 8px;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.modalTime {
+  font-size: 18px;
+  font-weight: 700;
+  color: hsl(37 42% 62%);
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.notesSection {
+  margin-bottom: 24px;
+}
+
+.notesLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(0 0% 17%);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.notesTextarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid hsl(40 20% 91%);
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: hsl(0 0% 17%);
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+.notesTextarea:focus {
+  outline: none;
+  border-color: hsl(37 42% 62%);
+  box-shadow: 0 0 0 3px hsl(37 42% 62% / 0.1);
+}
+
+.notesTextarea::placeholder {
+  color: hsl(0 0% 67%);
+}
+
+.modalActions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.modalActionButton {
+  padding: 12px;
+  background: white;
+  border: 1px solid hsl(40 20% 91%);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(0 0% 45%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.modalActionButton:hover {
+  background: hsl(40 33% 97%);
+  border-color: hsl(37 42% 62%);
+  color: hsl(37 42% 62%);
+  transform: translateY(-2px);
+}
+
+.saveNoteButton {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px hsl(37 42% 62% / 0.3);
+  transition: all 0.2s ease;
+}
+
+.saveNoteButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px hsl(37 42% 62% / 0.4);
+  filter: brightness(1.05);
+}
+
+.saveNoteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

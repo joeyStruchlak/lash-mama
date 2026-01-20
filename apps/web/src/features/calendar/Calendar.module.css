@@ -325,128 +325,333 @@
 }
 
 /* ========================================
-   WEEK VIEW - SIMPLIFIED
+   COMPACT WEEK VIEW - MATCHING MOCK
    ======================================== */
 
-.weekView {
+.weekViewCompact {
   width: 100%;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.weekDayHeaders {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
+/* MOBILE NAVIGATION */
+.mobileNavigation {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: hsl(0 0% 98%);
+  border-bottom: 1px solid hsl(0 0% 92%);
 }
 
-.weekDayHeader {
-  text-align: center;
-  padding: 12px 8px;
-  border-radius: 10px;
-  background: hsl(40 33% 97%);
+.navButton {
+  background: white;
+  border: 1px solid hsl(0 0% 88%);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: hsl(0 0% 40%);
+}
+
+.navButton:hover:not(:disabled) {
+  background: hsl(37 42% 95%);
+  border-color: hsl(37 42% 70%);
+  color: hsl(37 42% 62%);
+}
+
+.navButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.slideIndicator {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.slideDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: hsl(0 0% 80%);
   transition: all 0.2s ease;
 }
 
-.weekDayHeaderToday {
-  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+.slideDotActive {
+  width: 20px;
+  border-radius: 3px;
+  background: hsl(37 42% 62%);
 }
 
-.weekDayName {
-  font-size: 11px;
+/* HEADER ROW - Days of Week */
+.weekHeaderRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: hsl(0 0% 98%);
+  border-bottom: 1px solid hsl(0 0% 92%);
+}
+
+.weekHeaderCell {
+  padding: 10px 8px;
+  text-align: center;
+  border-right: 1px solid hsl(0 0% 94%);
+  transition: all 0.2s ease;
+}
+
+.weekHeaderCell:last-child {
+  border-right: none;
+}
+
+.weekHeaderCellToday {
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  border-radius: 0;
+}
+
+.weekHeaderDay {
+  font-size: 10px;
   font-weight: 600;
+  color: hsl(0 0% 55%);
+  letter-spacing: 0.5px;
   margin-bottom: 4px;
-  color: hsl(0 0% 45%);
   text-transform: uppercase;
 }
 
-.weekDayHeaderToday .weekDayName {
-  color: white;
+.weekHeaderCellToday .weekHeaderDay {
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.weekDayNumber {
-  font-size: 18px;
+.weekHeaderDate {
+  font-size: 20px;
   font-weight: 700;
   color: hsl(0 0% 17%);
   font-family: 'Cormorant Garamond', serif;
 }
 
-.weekDayHeaderToday .weekDayNumber {
+.weekHeaderCellToday .weekHeaderDate {
   color: white;
 }
 
-.weekGrid {
+/* APPOINTMENTS ROW */
+.weekAppointmentsRow {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  min-height: 500px;
+  align-items: start;
 }
 
-.weekDayColumn {
-  min-height: 300px;
-  padding: 8px;
-  border: 1px solid hsl(40 20% 91%);
-  border-radius: 12px;
-  background: hsl(40 33% 99%);
+.weekDayCell {
+  padding: 8px 6px;
+  border-right: 1px solid hsl(0 0% 94%);
+  background: white;
+  transition: all 0.2s ease;
 }
 
-.weekDayColumnToday {
-  border: 2px solid hsl(37 42% 62%);
+.weekDayCell:last-child {
+  border-right: none;
+}
+
+.weekDayCellToday {
   background: hsl(40 100% 99%);
+  border-left: none;
+  border-right: none;
 }
 
-.emptyDayText {
-  font-size: 12px;
-  color: hsl(0 0% 67%);
+.emptyState {
+  font-size: 11px;
+  color: hsl(0 0% 70%);
   text-align: center;
-  margin-top: 40px;
+  padding: 16px 4px;
   font-style: italic;
 }
 
-.weekAppointmentsList {
+.appointmentsList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
-.weekAppointmentCard {
-  background: white;
-  border: 1px solid hsl(37 45% 90%);
-  border-radius: 10px;
-  padding: 10px 12px;
+/* APPOINTMENT CHIPS - Ultra Compact */
+.appointmentChip {
+  background: linear-gradient(135deg, hsl(40 45% 96%) 0%, hsl(40 35% 94%) 100%);
+  border: 1px solid hsl(37 35% 88%);
+  border-radius: 8px;
+  padding: 6px 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.weekAppointmentCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.appointmentChip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
   border-color: hsl(37 42% 70%);
-  background: hsl(40 100% 99%);
+  background: linear-gradient(135deg, hsl(40 50% 97%) 0%, hsl(40 40% 95%) 100%);
 }
 
-.weekAppointmentTime {
-  font-size: 13px;
+.appointmentTime {
+  font-size: 11px;
   font-weight: 700;
   color: hsl(37 42% 62%);
-  margin-bottom: 6px;
+  margin-bottom: 3px;
+  letter-spacing: 0.2px;
 }
 
-.weekAppointmentClient {
-  font-size: 14px;
+.appointmentName {
+  font-size: 13px;
   font-weight: 600;
   color: hsl(0 0% 17%);
-  margin-bottom: 3px;
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
-.weekAppointmentService {
-  font-size: 11px;
-  color: hsl(0 0% 45%);
+.appointmentLocation {
+  font-size: 10px;
+  color: hsl(0 0% 50%);
+  font-weight: 500;
 }
 
-.weekAppointmentLocation {
-  font-size: 11px;
-  color: hsl(0 0% 45%);
+/* MOBILE RESPONSIVE */
+@media (max-width: 1024px) {
+  .weekHeaderCell {
+    padding: 8px 6px;
+  }
+
+  .weekHeaderDay {
+    font-size: 9px;
+  }
+
+  .weekHeaderDate {
+    font-size: 18px;
+  }
+
+  .weekDayCell {
+    padding: 6px 4px;
+  }
+
+  .appointmentChip {
+    padding: 5px 6px;
+  }
+
+  .appointmentTime {
+    font-size: 10px;
+  }
+
+  .appointmentName {
+    font-size: 12px;
+  }
+
+  .appointmentLocation {
+    font-size: 9px;
+  }
 }
 
+@media (max-width: 768px) {
+  .mobileNavigation {
+    display: flex;
+  }
+
+  .weekViewCompact {
+    border-radius: 12px;
+  }
+
+  .weekHeaderRowMobile {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .weekAppointmentsRowMobile {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .weekHeaderCell {
+    padding: 10px 8px;
+  }
+
+  .weekHeaderDay {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  .weekHeaderDate {
+    font-size: 20px;
+  }
+
+  .weekAppointmentsRow {
+    min-height: 450px;
+  }
+
+  .weekDayCell {
+    padding: 10px 8px;
+  }
+
+  .appointmentsList {
+    gap: 8px;
+  }
+
+  .appointmentChip {
+    padding: 8px 10px;
+    border-radius: 8px;
+  }
+
+  .appointmentTime {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .appointmentName {
+    font-size: 14px;
+  }
+
+  .appointmentLocation {
+    font-size: 11px;
+  }
+
+  .emptyState {
+    font-size: 12px;
+    padding: 20px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .weekHeaderCell {
+    padding: 10px 6px;
+  }
+
+  .weekHeaderDay {
+    font-size: 9px;
+    letter-spacing: 0.3px;
+  }
+
+  .weekHeaderDate {
+    font-size: 18px;
+  }
+
+  .weekDayCell {
+    padding: 8px 6px;
+  }
+
+  .appointmentChip {
+    padding: 7px 8px;
+  }
+
+  .appointmentTime {
+    font-size: 11px;
+  }
+
+  .appointmentName {
+    font-size: 13px;
+  }
+
+  .appointmentLocation {
+    font-size: 10px;
+  }
+}
 /* ========================================
    DAY VIEW - SAME AS TODAY'S SCHEDULE
    ======================================== */
@@ -480,33 +685,6 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border-color: hsl(37 42% 80%);
-}
-
-/* Status Badge - Top Right */
-.statusBadge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 3px 8px;
-  border-radius: 10px;
-  font-size: 8px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.statusConfirmed {
-  background: hsl(142 76% 36%);
-  color: white;
-  box-shadow: 0 2px 4px hsl(142 76% 36% / 0.3);
-}
-
-.statusPending {
-  background: hsl(38 92% 50%);
-  color: white;
-  box-shadow: 0 2px 4px hsl(38 92% 50% / 0.3);
 }
 
 /* Client Header - Horizontal Layout */
@@ -1099,5 +1277,56 @@
     width: 100%;
     justify-content: flex-start;
     margin-left: 0;
+  }
+}
+
+/* Note Badge - Top Right on Desktop, Bottom Right on Mobile */
+.noteBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 50%) 100%);
+  color: white;
+  box-shadow: 0 3px 8px hsl(217 91% 50% / 0.4);
+  border: 2px solid white;
+  animation: pulseNote 2s ease-in-out infinite;
+}
+
+@keyframes pulseNote {
+  0%, 100% {
+    box-shadow: 0 3px 8px hsl(217 91% 50% / 0.4);
+  }
+  50% {
+    box-shadow: 0 3px 12px hsl(217 91% 50% / 0.6);
+  }
+}
+
+/* Mobile: Move Note Badge to Bottom Right */
+@media (max-width: 968px) {
+  .noteBadge {
+    top: auto;
+    bottom: 16px;
+    right: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .noteBadge {
+    bottom: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    font-size: 9px;
+    gap: 4px;
   }
 }

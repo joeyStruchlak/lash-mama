@@ -44,6 +44,9 @@ export function CalendarDayView({
           const memberSince = apt.user?.created_at
             ? new Date(apt.user.created_at).getFullYear()
             : new Date().getFullYear();
+          
+          // Check if note exists
+          const hasNote = apt.notes && apt.notes.trim().length > 0;
 
           return (
             <div
@@ -51,13 +54,13 @@ export function CalendarDayView({
               className={styles.appointmentCard}
               onClick={() => onAppointmentClick(apt)}
             >
-              <span
-                className={`${styles.statusBadge} ${
-                  apt.status === 'confirmed' ? styles.statusConfirmed : styles.statusPending
-                }`}
-              >
-                {apt.status}
-              </span>
+              {/* Note Badge - Only show if note exists */}
+              {hasNote && (
+                <span className={styles.noteBadge}>
+                  <FileText size={12} />
+                  Note
+                </span>
+              )}
 
               <div className={styles.clientHeader}>
                 <div style={{ position: 'relative' }}>
@@ -133,12 +136,14 @@ export function CalendarDayView({
                 <button
                   className={`${styles.actionButton} ${styles.aftercareButton}`}
                   data-tooltip="Aftercare"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <Gift size={18} />
                 </button>
                 <button
                   className={`${styles.actionButton} ${styles.formButton}`}
                   data-tooltip="Allergy Form"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <FileText size={18} />
                 </button>

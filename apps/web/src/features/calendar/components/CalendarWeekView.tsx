@@ -1,5 +1,7 @@
 // apps/web/src/features/calendar/components/CalendarWeekView.tsx
 
+import { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   getWeekDays,
   getAppointmentsForDate,
@@ -21,53 +23,173 @@ export function CalendarWeekView({
   onAppointmentClick,
 }: CalendarWeekViewProps) {
   const weekDays = getWeekDays(currentDate);
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Find today's index to start on that slide - ONLY RUN ONCE
+  useEffect(() => {
+    if (isMobile && !hasInitialized) {
+      const todayIndex = weekDays.findIndex((date) => isToday(date));
+      if (todayIndex !== -1) {
+        // Start at slide containing today (0: Sun-Tue, 1: Wed-Fri, 2: Sat)
+        const slideIndex = Math.floor(todayIndex / 3);
+        console.log(
+          '🎬 Initial setup - Today index:',
+          todayIndex,
+          'Starting at slide:',
+          slideIndex
+        );
+        setCurrentSlide(slideIndex);
+      }
+      setHasInitialized(true);
+    }
+  }, [isMobile, hasInitialized]);
+
+  const totalSlides = 3; // Sun-Tue, Wed-Fri, Sat alone
+
+  const getVisibleDays = () => {
+    if (!isMobile) return weekDays;
+
+    const start = currentSlide * 3;
+    const end = Math.min(start + 3, weekDays.length);
+    console.log('🔍 Current Slide:', currentSlide);
+    console.log('📅 Visible Days Range:', start, 'to', end);
+    console.log('📊 Total Week Days:', weekDays.length);
+    return weekDays.slice(start, end);
+  };
+
+  const canGoPrev = currentSlide > 0;
+  const canGoNext = currentSlide < 2; // 0, 1, 2 = 3 slides total
+
+  const handlePrev = () => {
+    console.log('⬅️ PREV clicked - Current:', currentSlide, 'Can go?', canGoPrev);
+    if (canGoPrev) {
+      const newSlide = currentSlide - 1;
+      console.log('✅ Moving to slide:', newSlide);
+      setCurrentSlide(newSlide);
+    } else {
+      console.log('❌ Cannot go previous');
+    }
+  };
+
+  const handleNext = () => {
+    console.log('➡️ NEXT clicked - Current:', currentSlide, 'Can go?', canGoNext);
+    if (canGoNext) {
+      const newSlide = currentSlide + 1;
+      console.log('✅ Moving to slide:', newSlide);
+      setCurrentSlide(newSlide);
+    } else {
+      console.log('❌ Cannot go next');
+    }
+  };
+
+  console.log('🎯 Render - isMobile:', isMobile, 'currentSlide:', currentSlide);
+
+  const visibleDays = getVisibleDays();
 
   return (
-    <div className={styles.weekView}>
-      <div className={styles.weekDayHeaders}>
-        {weekDays.map((date, i) => {
+    <div className={styles.weekViewCompact}>
+      {/* Mobile Navigation */}
+      {isMobile && (
+        <div className={styles.mobileNavigation}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🔴 LEFT BUTTON CLICKED!!!');
+              handlePrev();
+            }}
+            disabled={!canGoPrev}
+            className={styles.navButton}
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div className={styles.slideIndicator}>
+            {Array.from({ length: totalSlides }).map((_, i) => (
+              <div
+                key={i}
+                className={`${styles.slideDot} ${i === currentSlide ? styles.slideDotActive : ''}`}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🔴 RIGHT BUTTON CLICKED!!!');
+              handleNext();
+            }}
+            disabled={!canGoNext}
+            className={styles.navButton}
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
+
+      {/* Day Headers */}
+      <div className={`${styles.weekHeaderRow} ${isMobile ? styles.weekHeaderRowMobile : ''}`}>
+        {visibleDays.map((date, i) => {
           const today = isToday(date);
           return (
             <div
               key={i}
-              className={`${styles.weekDayHeader} ${today ? styles.weekDayHeaderToday : ''}`}
+              className={`${styles.weekHeaderCell} ${today ? styles.weekHeaderCellToday : ''}`}
             >
-              <p className={styles.weekDayName}>
-                {date.toLocaleDateString('en-US', { weekday: 'short' })}
-              </p>
-              <p className={styles.weekDayNumber}>{date.getDate()}</p>
+              <div className={styles.weekHeaderDay}>
+                {date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
+              </div>
+              <div className={styles.weekHeaderDate}>{date.getDate()}</div>
             </div>
           );
         })}
       </div>
 
-      <div className={styles.weekGrid}>
-        {weekDays.map((date, i) => {
+      {/* Appointments Grid */}
+      <div
+        className={`${styles.weekAppointmentsRow} ${isMobile ? styles.weekAppointmentsRowMobile : ''}`}
+      >
+        {visibleDays.map((date, i) => {
           const dayAppointments = getAppointmentsForDate(appointments, date);
           const today = isToday(date);
 
           return (
             <div
               key={i}
-              className={`${styles.weekDayColumn} ${today ? styles.weekDayColumnToday : ''}`}
+              className={`${styles.weekDayCell} ${today ? styles.weekDayCellToday : ''}`}
             >
               {dayAppointments.length === 0 ? (
-                <p className={styles.emptyDayText}>No appointments</p>
+                <div className={styles.emptyState}>No appointments</div>
               ) : (
-                <div className={styles.weekAppointmentsList}>
+                <div className={styles.appointmentsList}>
                   {dayAppointments.map((apt) => (
                     <div
                       key={apt.id}
-                      className={styles.weekAppointmentCard}
+                      className={styles.appointmentChip}
                       onClick={() => onAppointmentClick(apt)}
                     >
-                      <p className={styles.weekAppointmentTime}>
+                      <div className={styles.appointmentTime}>
                         {formatTime(apt.appointment_time)}
-                      </p>
-                      <p className={styles.weekAppointmentClient}>{apt.user?.full_name}</p>
-                      <p className={styles.weekAppointmentLocation}>
+                      </div>
+                      <div className={styles.appointmentName}>
+                        {apt.user?.full_name || 'Unknown'}
+                      </div>
+                      <div className={styles.appointmentLocation}>
                         {apt.user?.full_name?.split(' ')[1] || 'Studio'}
-                      </p>
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { getCurrentUser } from '@/lib/auth';
 import { calendarService } from '../services/calendar.service';
 import { getDateRange, navigateDate } from '../utils/calendar.helpers';
-import type { CalendarAppointment, CalendarStats, CalendarView } from '../types/calendar.types';
+import { useAppointmentNote } from '@/features/shared/hooks/useAppointmentNote';
+import type { CalendarAppointment, CalendarStats } from '../types/calendar.types';
 
 /**
  * useCalendar Hook
@@ -25,6 +26,16 @@ export function useCalendar() {
   const [showModal, setShowModal] = useState(false);
   const [note, setNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+
+  // Use shared appointment note hook
+  const {
+    showSuccessModal,
+    showErrorModal,
+    errorMessage,
+    saveAppointmentNote,
+    setShowSuccessModal,
+    setShowErrorModal,
+  } = useAppointmentNote();
 
   /**
    * Fetch calendar data on mount and when dependencies change
@@ -99,21 +110,10 @@ export function useCalendar() {
   /**
    * Open appointment modal
    */
-  async function openAppointmentModal(appointment: CalendarAppointment) {
-    if (!staffId) return;
-
-    try {
-      setSelectedAppointment(appointment);
-
-      // Load note
-      const noteText = await calendarService.loadAppointmentNote(appointment.id, staffId);
-      setNote(noteText);
-      setShowModal(true);
-    } catch (error) {
-      console.error('❌ Error opening modal:', error);
-      setNote('');
-      setShowModal(true);
-    }
+  function openAppointmentModal(appointment: CalendarAppointment) {
+    setSelectedAppointment(appointment);
+    setNote(appointment.notes || '');
+    setShowModal(true);
   }
 
   /**
@@ -128,18 +128,20 @@ export function useCalendar() {
   /**
    * Save appointment note
    */
-  async function saveNote() {
-    if (!selectedAppointment || !staffId) return;
+  async function handleSaveNote() {
+    if (!selectedAppointment) return;
 
     try {
       setSavingNote(true);
-      await calendarService.saveAppointmentNote(selectedAppointment.id, staffId, note);
-      alert('Note saved successfully!');
+      await saveAppointmentNote(selectedAppointment.id, note);
+
+      // Close main modal
       closeModal();
+
+      // Refresh data
       await fetchCalendarData();
     } catch (error) {
-      console.error('❌ Error saving note:', error);
-      alert('Failed to save note');
+      // Error modal already shown by useAppointmentNote hook
     } finally {
       setSavingNote(false);
     }
@@ -156,6 +158,9 @@ export function useCalendar() {
     showModal,
     note,
     savingNote,
+    showSuccessModal,
+    showErrorModal,
+    errorMessage,
 
     // Actions
     setCurrentDate,
@@ -165,6 +170,8 @@ export function useCalendar() {
     openAppointmentModal,
     closeModal,
     setNote,
-    saveNote,
+    handleSaveNote,
+    setShowSuccessModal,
+    setShowErrorModal,
   };
 }

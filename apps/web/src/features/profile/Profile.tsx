@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin, User, Briefcase, FileText } from 'lucide-react';
 import { useProfile } from './hooks/useProfile';
 import { ProfileAvatar } from './components/ProfileAvatar';
 import { EditableField } from './components/EditableField';
@@ -87,6 +87,7 @@ export function Profile({ canEdit = true }: ProfileProps) {
                 field="display_name"
                 label="Display Name"
                 value={profileData.display_name || ''}
+                icon={<User size={16} />}
                 isEditing={editingField === 'display_name' && canEdit}
                 disabled={!canEdit}
                 onEdit={() => canEdit && setEditingField('display_name')}
@@ -99,6 +100,7 @@ export function Profile({ canEdit = true }: ProfileProps) {
                 field="display_name"
                 label="Title"
                 value={profileData.title || ''}
+                icon={<Briefcase size={16} />}
                 isEditing={false}
                 disabled={true}
                 onEdit={() => {}}
@@ -145,6 +147,7 @@ export function Profile({ canEdit = true }: ProfileProps) {
               label="Bio"
               value={profileData.bio || ''}
               type="textarea"
+              icon={<FileText size={16} />}
               isEditing={editingField === 'bio' && canEdit}
               disabled={!canEdit}
               onEdit={() => canEdit && setEditingField('bio')}

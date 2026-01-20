@@ -9,7 +9,9 @@ import { MiniCalendar } from './components/MiniCalendar';
 import { CalendarStats } from './components/CalendarStats';
 import { CalendarWeekView } from './components/CalendarWeekView';
 import { CalendarDayView } from './components/CalendarDayView';
-import { AppointmentModal } from './components/AppointmentModal';
+import { AppointmentModal } from '@/features/shared/components/AppointmentModal';
+import { SuccessModal } from '@/features/shared/components/SuccessModal';
+import { ErrorModal } from '@/features/shared/components/ErrorModal';
 import { getHeaderText } from './utils/calendar.helpers';
 import type { CalendarProps } from './types/calendar.types';
 import styles from './Calendar.module.css';
@@ -32,6 +34,9 @@ export function Calendar({ role, staffId, showFilters = true, showNewButton = tr
     showModal,
     note,
     savingNote,
+    showSuccessModal,
+    showErrorModal,
+    errorMessage,
     setCurrentDate,
     navigate,
     goToToday,
@@ -39,7 +44,9 @@ export function Calendar({ role, staffId, showFilters = true, showNewButton = tr
     openAppointmentModal,
     closeModal,
     setNote,
-    saveNote,
+    handleSaveNote,
+    setShowSuccessModal,
+    setShowErrorModal,
   } = useCalendar();
 
   function handleMessageClient(clientId: string, clientName: string) {
@@ -55,100 +62,115 @@ export function Calendar({ role, staffId, showFilters = true, showNewButton = tr
   }
 
   return (
-    <div className={styles.container}>
-      {/* Left Side: Calendar + Stats */}
-      <div className={styles.leftPanel}>
-        <div className={styles.calendarHeader}>
-          <div>
-            <h2 className={styles.calendarTitle}>Calendar</h2>
-            <p className={styles.calendarSubtitle}>View and manage all appointments</p>
+    <>
+      <div className={styles.container}>
+        {/* Left Side: Calendar + Stats */}
+        <div className={styles.leftPanel}>
+          <div className={styles.calendarHeader}>
+            <div>
+              <h2 className={styles.calendarTitle}>Calendar</h2>
+              <p className={styles.calendarSubtitle}>View and manage all appointments</p>
+            </div>
+            <div className={styles.headerActions}>
+              {showFilters && (
+                <button className={styles.filterButton}>
+                  <Filter size={16} />
+                  Filter
+                </button>
+              )}
+              {showNewButton && (
+                <button className={styles.newAppointmentButton}>
+                  <Plus size={16} />
+                  New Appointment
+                </button>
+              )}
+            </div>
           </div>
-          <div className={styles.headerActions}>
-            {showFilters && (
-              <button className={styles.filterButton}>
-                <Filter size={16} />
-                Filter
-              </button>
-            )}
-            {showNewButton && (
-              <button className={styles.newAppointmentButton}>
-                <Plus size={16} />
-                New Appointment
-              </button>
-            )}
-          </div>
-        </div>
 
-        {/* Mini Month Calendar */}
-        <MiniCalendar
-          currentDate={currentDate}
-          appointments={appointments}
-          onDateSelect={setCurrentDate}
-          onNavigate={navigate}
-        />
-
-        {/* Stats */}
-        <CalendarStats stats={stats} />
-      </div>
-
-      {/* Right Side: Week/Day View */}
-      <div className={styles.rightPanel}>
-        <div className={styles.viewHeader}>
-          <h3 className={styles.viewTitle}>{getHeaderText(currentDate, viewMode)}</h3>
-          <div className={styles.viewToggle}>
-            <button
-              onClick={() => changeViewMode('day')}
-              className={`${styles.viewToggleButton} ${
-                viewMode === 'day' ? styles.viewToggleButtonActive : ''
-              }`}
-            >
-              <CalIcon size={14} />
-              Day
-            </button>
-            <button
-              onClick={() => changeViewMode('week')}
-              className={`${styles.viewToggleButton} ${
-                viewMode === 'week' ? styles.viewToggleButtonActive : ''
-              }`}
-            >
-              <Grid3x3 size={14} />
-              Week
-            </button>
-          </div>
-        </div>
-
-        {/* Week View */}
-        {viewMode === 'week' && (
-          <CalendarWeekView
+          {/* Mini Month Calendar */}
+          <MiniCalendar
             currentDate={currentDate}
             appointments={appointments}
-            onAppointmentClick={openAppointmentModal}
+            onDateSelect={setCurrentDate}
+            onNavigate={navigate}
           />
-        )}
 
-        {/* Day View */}
-        {viewMode === 'day' && (
-          <CalendarDayView
-            currentDate={currentDate}
-            appointments={appointments}
-            onAppointmentClick={openAppointmentModal}
-            onMessageClient={handleMessageClient}
-          />
-        )}
+          {/* Stats */}
+          <CalendarStats stats={stats} />
+        </div>
+
+        {/* Right Side: Week/Day View */}
+        <div className={styles.rightPanel}>
+          <div className={styles.viewHeader}>
+            <h3 className={styles.viewTitle}>{getHeaderText(currentDate, viewMode)}</h3>
+            <div className={styles.viewToggle}>
+              <button
+                onClick={() => changeViewMode('day')}
+                className={`${styles.viewToggleButton} ${
+                  viewMode === 'day' ? styles.viewToggleButtonActive : ''
+                }`}
+              >
+                <CalIcon size={14} />
+                Day
+              </button>
+              <button
+                onClick={() => changeViewMode('week')}
+                className={`${styles.viewToggleButton} ${
+                  viewMode === 'week' ? styles.viewToggleButtonActive : ''
+                }`}
+              >
+                <Grid3x3 size={14} />
+                Week
+              </button>
+            </div>
+          </div>
+
+          {/* Week View */}
+          {viewMode === 'week' && (
+            <CalendarWeekView
+              currentDate={currentDate}
+              appointments={appointments}
+              onAppointmentClick={openAppointmentModal}
+            />
+          )}
+
+          {/* Day View */}
+          {viewMode === 'day' && (
+            <CalendarDayView
+              currentDate={currentDate}
+              appointments={appointments}
+              onAppointmentClick={openAppointmentModal}
+              onMessageClient={handleMessageClient}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Appointment Detail Modal */}
+      {/* Appointment Modal - SHARED */}
       {showModal && selectedAppointment && (
         <AppointmentModal
           appointment={selectedAppointment}
           note={note}
           saving={savingNote}
           onNoteChange={setNote}
-          onSave={saveNote}
+          onSave={handleSaveNote}
           onClose={closeModal}
           onMessageClient={handleMessageClient}
         />
       )}
-    </div>
+
+      {/* Success Modal - SHARED */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+      />
+
+      {/* Error Modal - SHARED */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
+    </>
   );
 }

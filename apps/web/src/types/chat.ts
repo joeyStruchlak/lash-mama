@@ -1,3 +1,5 @@
+// apps/web/src/types/chat.ts
+
 // Base interfaces matching public.messages schema
 export interface Message {
   id: string;
@@ -35,22 +37,22 @@ export interface MessageWithSender extends Message {
   };
 }
 
-export interface ConversationWithDetails extends Conversation {
-  other_user?: {
-    id: string;
-    full_name: string;
-    email: string;
-    role: string;
-    avatar_url?: string;
-  };
-  last_message_text?: string;
-  unread_count: number;
-}
-
 export interface User {
   id: string;
   full_name: string;
   email: string;
   role: string;
   avatar_url?: string;
+  vip_streak?: number;
 }
+
+export interface ConversationWithDetails extends Conversation {
+  other_user?: User & {
+    is_online?: boolean;
+    last_seen?: string;
+  };
+  last_message_text?: string;
+  unread_count: number;
+}
+
+export type ConversationFilter = 'all' | 'unread' | 'vip';

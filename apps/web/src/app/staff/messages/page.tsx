@@ -1,10 +1,26 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Send, Search, Plus, ArrowLeft, MessageCircle, Check, CheckCheck } from 'lucide-react';
+import {
+  Send,
+  Search,
+  Plus,
+  ArrowLeft,
+  MessageCircle,
+  Check,
+  CheckCheck,
+  Crown,
+} from 'lucide-react';
 import styles from './Messages.module.css';
-import type { Message, Conversation, ConversationWithDetails, User, MessageWithSender } from '@/types/chat';
+import type {
+  Message,
+  Conversation,
+  ConversationWithDetails,
+  User,
+  MessageWithSender,
+  ConversationFilter,
+} from '@/types/chat';
 
 export default function StaffMessagesPage() {
   const [conversations, setConversations] = useState<ConversationWithDetails[]>([]);
@@ -18,16 +34,17 @@ export default function StaffMessagesPage() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<ConversationFilter>('all');
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const subscriptionRef = useRef<any>(null);
-  const typingTimeoutRef = useRef<any>(null);
+  const presenceChannelRef = useRef<any>(null);
 
   useEffect(() => {
     initializeMessaging();
     return () => {
-      if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe();
-      }
+      if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
+      if (presenceChannelRef.current) supabase.removeChannel(presenceChannelRef.current);
     };
   }, []);
 
@@ -38,40 +55,133 @@ export default function StaffMessagesPage() {
       subscribeToTyping(selectedConversation);
     }
     return () => {
-      if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe();
-      }
+      if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
     };
   }, [selectedConversation]);
 
+  // Enhanced auto-scroll - scroll on ANY change to messages or typing
   useEffect(() => {
-    // Always scroll when new messages arrive
-    scrollToBottom();
-  }, [messages.length]);
+    scrollToBottom('smooth');
+  }, [messages.length, otherUserTyping]);
 
-  // Auto-scroll when typing indicator appears
+  // Force scroll when messages area mounts/updates
   useEffect(() => {
-    if (otherUserTyping) {
-      scrollToBottom();
-    }
-  }, [otherUserTyping]);
+    const timer = setTimeout(() => scrollToBottom('instant'), 100);
+    return () => clearTimeout(timer);
+  }, [selectedConversation]);
 
   async function initializeMessaging() {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       setCurrentUserId(user.id);
-      await Promise.all([
-        fetchConversations(user.id),
-        fetchAllUsers(user.id)
-      ]);
+      await Promise.all([fetchConversations(user.id), fetchAllUsers(user.id)]);
+
+      // Setup presence tracking
+      setupPresence(user.id);
     } catch (err) {
       console.error('Error initializing:', err);
     } finally {
       setLoading(false);
     }
+  }
+
+  function setupPresence(userId: string) {
+    console.log('🟢 Setting up presence for user:', userId);
+
+    const channel = supabase.channel('online-users', {
+      config: {
+        presence: {
+          key: userId,
+        },
+      },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        console.log('👥 Presence sync - Current state:', state);
+        const online = new Set(Object.keys(state));
+        console.log('🟢 Online users:', Array.from(online));
+        setOnlineUsers(online);
+
+        // Update conversations with online status
+        setConversations((prev) =>
+          prev.map((conv) => ({
+            ...conv,
+            other_user: conv.other_user
+              ? {
+                  ...conv.other_user,
+                  is_online: online.has(conv.other_user.id),
+                }
+              : undefined,
+          }))
+        );
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log('✅ User joined:', key, newPresences);
+        setOnlineUsers((prev) => {
+          const updated = new Set([...prev, key]);
+          console.log('🟢 Updated online users:', Array.from(updated));
+          return updated;
+        });
+
+        // Update conversations
+        setConversations((prev) =>
+          prev.map((conv) => ({
+            ...conv,
+            other_user: conv.other_user
+              ? {
+                  ...conv.other_user,
+                  is_online: conv.other_user.id === key ? true : conv.other_user.is_online,
+                }
+              : undefined,
+          }))
+        );
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log('❌ User left:', key, leftPresences);
+        setOnlineUsers((prev) => {
+          const updated = new Set(prev);
+          updated.delete(key);
+          console.log('🔴 Updated online users:', Array.from(updated));
+          return updated;
+        });
+
+        // Update conversations
+        setConversations((prev) =>
+          prev.map((conv) => ({
+            ...conv,
+            other_user: conv.other_user
+              ? {
+                  ...conv.other_user,
+                  is_online: conv.other_user.id === key ? false : conv.other_user.is_online,
+                }
+              : undefined,
+          }))
+        );
+      })
+      .subscribe(async (status) => {
+        console.log('📡 Presence channel status:', status);
+
+        if (status === 'SUBSCRIBED') {
+          const presenceTrackStatus = await channel.track({
+            user_id: userId,
+            online_at: new Date().toISOString(),
+          });
+          console.log('✅ Presence tracked:', presenceTrackStatus);
+        }
+
+        if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Presence channel error');
+        }
+      });
+
+    presenceChannelRef.current = channel;
   }
 
   async function fetchConversations(userId: string) {
@@ -86,7 +196,7 @@ export default function StaffMessagesPage() {
         return;
       }
 
-      const conversationIds = participantData.map(p => p.conversation_id);
+      const conversationIds = participantData.map((p) => p.conversation_id);
 
       const { data: conversationsData } = await supabase
         .from('conversations')
@@ -108,7 +218,7 @@ export default function StaffMessagesPage() {
 
           const { data: userData } = await supabase
             .from('users')
-            .select('id, full_name, email, role, avatar_url')
+            .select('id, full_name, email, role, avatar_url, vip_streak')
             .eq('id', participants[0].user_id)
             .single();
 
@@ -129,17 +239,27 @@ export default function StaffMessagesPage() {
             .neq('sender_id', userId)
             .is('read_at', null);
 
+          // Check if this user is online
+          const isUserOnline = onlineUsers.has(userData.id);
+          console.log(`👤 User ${userData.full_name} online status:`, isUserOnline);
+
           return {
             ...conv,
-            other_user: userData,
+            other_user: {
+              ...userData,
+              is_online: isUserOnline,
+            },
             last_message_text: lastMessage?.message_text || 'Start chatting',
             last_message_at: lastMessage?.created_at || conv.created_at,
-            unread_count: unreadCount || 0
+            unread_count: unreadCount || 0,
           };
         })
       );
 
-      setConversations(enrichedConversations.filter(Boolean) as ConversationWithDetails[]);
+      const filtered = enrichedConversations.filter(Boolean) as ConversationWithDetails[];
+      console.log('💬 Loaded conversations:', filtered.length);
+      console.log('🟢 Online users count:', onlineUsers.size);
+      setConversations(filtered);
     } catch (err) {
       console.error('Error fetching conversations:', err);
     }
@@ -149,7 +269,7 @@ export default function StaffMessagesPage() {
     try {
       const { data } = await supabase
         .from('users')
-        .select('id, full_name, email, role, avatar_url')
+        .select('id, full_name, email, role, avatar_url, vip_streak')
         .neq('id', currentUserId);
 
       if (data) setAllUsers(data);
@@ -182,12 +302,8 @@ export default function StaffMessagesPage() {
 
       setMessages(messagesWithSenders);
 
-      // Instant scroll to bottom when messages load
-      setTimeout(() => {
-        if (messagesEndRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
-        }
-      }, 0);
+      // Instant scroll when messages first load
+      setTimeout(() => scrollToBottom('instant'), 50);
 
       markMessagesAsRead(conversationId);
     } catch (err) {
@@ -204,10 +320,8 @@ export default function StaffMessagesPage() {
         .neq('sender_id', currentUserId)
         .is('read_at', null);
 
-      setConversations(prev =>
-        prev.map(conv =>
-          conv.id === conversationId ? { ...conv, unread_count: 0 } : conv
-        )
+      setConversations((prev) =>
+        prev.map((conv) => (conv.id === conversationId ? { ...conv, unread_count: 0 } : conv))
       );
     } catch (err) {
       console.error('Error marking messages as read:', err);
@@ -215,9 +329,7 @@ export default function StaffMessagesPage() {
   }
 
   function subscribeToMessages(conversationId: string) {
-    if (subscriptionRef.current) {
-      subscriptionRef.current.unsubscribe();
-    }
+    if (subscriptionRef.current) subscriptionRef.current.unsubscribe();
 
     subscriptionRef.current = supabase
       .channel(`messages:${conversationId}`)
@@ -227,25 +339,22 @@ export default function StaffMessagesPage() {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`
+          filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
           const newMsg = payload.new as Message;
-
-          console.log('🔔 NEW MESSAGE RECEIVED:', newMsg);
-
           const { data: senderData } = await supabase
             .from('users')
             .select('full_name, avatar_url, role')
             .eq('id', newMsg.sender_id)
             .single();
 
-          setMessages(prev => [...prev, { ...newMsg, sender: senderData || undefined }]);
+          setMessages((prev) => [...prev, { ...newMsg, sender: senderData || undefined }]);
 
-          if (newMsg.sender_id !== currentUserId) {
-            console.log('📖 Marking message as read...');
-            await markMessagesAsRead(conversationId);
-          }
+          // Auto-scroll when new message arrives
+          setTimeout(() => scrollToBottom('smooth'), 100);
+
+          if (newMsg.sender_id !== currentUserId) await markMessagesAsRead(conversationId);
         }
       )
       .on(
@@ -254,18 +363,13 @@ export default function StaffMessagesPage() {
           event: 'UPDATE',
           schema: 'public',
           table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`
+          filter: `conversation_id=eq.${conversationId}`,
         },
-        async (payload) => {
-          console.log('✏️ MESSAGE UPDATED:', payload.new);
+        (payload) => {
           const updatedMsg = payload.new as Message;
-
-          // Update the message in state
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.id === updatedMsg.id
-                ? { ...msg, read_at: updatedMsg.read_at }
-                : msg
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === updatedMsg.id ? { ...msg, read_at: updatedMsg.read_at } : msg
             )
           );
         }
@@ -275,74 +379,47 @@ export default function StaffMessagesPage() {
 
   function subscribeToTyping(conversationId: string) {
     const channel = supabase.channel(`room-${conversationId}`, {
-      config: {
-        broadcast: { self: false },
-        presence: { key: currentUserId }
-      }
+      config: { broadcast: { self: false }, presence: { key: currentUserId } },
     });
 
     channel
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
-        console.log('⌨️ Received typing event:', payload);
         if (payload.user_id !== currentUserId) {
           setOtherUserTyping(true);
           setTimeout(() => setOtherUserTyping(false), 3000);
         }
       })
-      .subscribe((status) => {
-        console.log('📡 Typing channel status:', status);
-      });
+      .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
   }
 
   async function handleTyping() {
     if (!selectedConversation || !currentUserId) return;
-
-    try {
-      const channel = supabase.channel(`room-${selectedConversation}`);
-
-      await channel.subscribe();
-
-      await channel.send({
-        type: 'broadcast',
-        event: 'typing',
-        payload: { user_id: currentUserId, is_typing: true }
-      });
-
-      console.log('✅ Typing broadcast sent');
-
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-
-      typingTimeoutRef.current = setTimeout(() => {
-        // Typing stopped
-      }, 1000);
-    } catch (err) {
-      console.error('❌ Typing error:', err);
-    }
+    const channel = supabase.channel(`room-${selectedConversation}`);
+    await channel.subscribe();
+    await channel.send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { user_id: currentUserId, is_typing: true },
+    });
   }
-
 
   async function sendMessage() {
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: selectedConversation,
-          sender_id: currentUserId,
-          message_text: newMessage.trim()
-        })
-        .select();
-
-      if (error) throw error;
+      await supabase.from('messages').insert({
+        conversation_id: selectedConversation,
+        sender_id: currentUserId,
+        message_text: newMessage.trim(),
+      });
 
       setNewMessage('');
+
+      // Smooth scroll after sending
+      setTimeout(() => scrollToBottom('smooth'), 100);
+
       await fetchConversations(currentUserId);
     } catch (err) {
       console.error('Error sending message:', err);
@@ -374,22 +451,18 @@ export default function StaffMessagesPage() {
         }
       }
 
-      const { data: newConv, error: convError } = await supabase
+      const { data: newConv } = await supabase
         .from('conversations')
         .insert({ type: 'direct' })
         .select()
         .single();
 
-      if (convError) throw convError;
+      if (!newConv) return;
 
-      const { error: participantError } = await supabase
-        .from('conversation_participants')
-        .insert([
-          { conversation_id: newConv.id, user_id: currentUserId },
-          { conversation_id: newConv.id, user_id: otherUserId }
-        ]);
-
-      if (participantError) throw participantError;
+      await supabase.from('conversation_participants').insert([
+        { conversation_id: newConv.id, user_id: currentUserId },
+        { conversation_id: newConv.id, user_id: otherUserId },
+      ]);
 
       setSelectedConversation(newConv.id);
       setShowNewChat(false);
@@ -410,12 +483,12 @@ export default function StaffMessagesPage() {
     setShowNewChat(false);
   }
 
-  function scrollToBottom() {
+  function scrollToBottom(behavior: 'smooth' | 'instant' = 'smooth') {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ 
-        behavior: 'instant',
+      messagesEndRef.current.scrollIntoView({
+        behavior: behavior,
         block: 'end',
-        inline: 'nearest'
+        inline: 'nearest',
       });
     }
   }
@@ -429,50 +502,50 @@ export default function StaffMessagesPage() {
     const diffDays = Math.floor(diffMs / 86400000);
 
     if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}d`;
+    if (diffMins < 60) return `${diffMins} min`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''}`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
   function getInitials(name: string): string {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   }
 
-  function shouldShowDateSeparator(currentMsg: MessageWithSender, previousMsg: MessageWithSender | null): boolean {
-    if (!previousMsg) return true;
-
-    const currentDate = new Date(currentMsg.created_at).toDateString();
-    const previousDate = new Date(previousMsg.created_at).toDateString();
-
-    return currentDate !== previousDate;
+  function getAvatarColor(name: string): string {
+    const colors = [
+      'linear-gradient(135deg, hsl(340 82% 85%) 0%, hsl(340 82% 75%) 100%)',
+      'linear-gradient(135deg, hsl(217 91% 85%) 0%, hsl(217 91% 75%) 100%)',
+      'linear-gradient(135deg, hsl(142 76% 85%) 0%, hsl(142 76% 75%) 100%)',
+      'linear-gradient(135deg, hsl(37 91% 85%) 0%, hsl(37 91% 75%) 100%)',
+      'linear-gradient(135deg, hsl(271 76% 85%) 0%, hsl(271 76% 75%) 100%)',
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
   }
 
-  function formatDateSeparator(dateStr: string): string {
-    const date = new Date(dateStr);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return 'Today';
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
-    } else {
-      return date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
-      });
-    }
+  function isVIP(user?: User): boolean {
+    return (user?.vip_streak ?? 0) >= 10 || user?.role === 'vip';
   }
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.other_user?.full_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredConversations = conversations.filter((conv) => {
+    const matchesSearch = conv.other_user?.full_name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
 
-  const selectedConvDetails = conversations.find(c => c.id === selectedConversation);
+    if (activeFilter === 'unread') return conv.unread_count > 0;
+    if (activeFilter === 'vip') return isVIP(conv.other_user);
+    return true;
+  });
+
+  const selectedConvDetails = conversations.find((c) => c.id === selectedConversation);
 
   if (loading) {
     return (
@@ -485,14 +558,15 @@ export default function StaffMessagesPage() {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.messagesWrapper}>
-        {/* LEFT SIDEBAR - Always visible on desktop */}
         <aside className={`${styles.sidebar} ${showMobileChat ? styles.sidebarHiddenMobile : ''}`}>
           <div className={styles.sidebarHeader}>
-            <h2 className={styles.sidebarTitle}>Messages</h2>
-            <button
-              className={styles.newChatBtn}
-              onClick={() => setShowNewChat(true)}
-            >
+            <div>
+              <h2 className={styles.sidebarTitle}>Messages</h2>
+              <p className={styles.sidebarSubtitle}>
+                {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <button className={styles.newChatBtn} onClick={() => setShowNewChat(true)}>
               <Plus size={20} />
             </button>
           </div>
@@ -508,32 +582,67 @@ export default function StaffMessagesPage() {
             />
           </div>
 
+          <div className={styles.filterPills}>
+            <button
+              className={`${styles.filterPill} ${activeFilter === 'all' ? styles.filterPillActive : ''}`}
+              onClick={() => setActiveFilter('all')}
+            >
+              All
+            </button>
+            <button
+              className={`${styles.filterPill} ${activeFilter === 'unread' ? styles.filterPillActive : ''}`}
+              onClick={() => setActiveFilter('unread')}
+            >
+              Unread
+            </button>
+            <button
+              className={`${styles.filterPill} ${activeFilter === 'vip' ? styles.filterPillActive : ''}`}
+              onClick={() => setActiveFilter('vip')}
+            >
+              VIP
+            </button>
+          </div>
+
           <div className={styles.conversationsList}>
             {filteredConversations.length === 0 ? (
               <div className={styles.emptyConversations}>
                 <MessageCircle size={48} />
-                <p>No conversations yet</p>
+                <p>No conversations found</p>
               </div>
             ) : (
-              filteredConversations.map(conv => (
+              filteredConversations.map((conv) => (
                 <div
                   key={conv.id}
                   onClick={() => handleSelectConversation(conv.id)}
                   className={`${styles.convItem} ${selectedConversation === conv.id ? styles.convItemActive : ''}`}
                 >
-                  <div className={styles.convAvatar}>
-                    {conv.other_user?.avatar_url ? (
-                      <img src={conv.other_user.avatar_url} alt="" />
-                    ) : (
-                      <div className={styles.avatarPlaceholder}>
-                        {getInitials(conv.other_user?.full_name || '')}
-                      </div>
+                  <div className={styles.convAvatarWrapper}>
+                    <div
+                      className={styles.convAvatar}
+                      style={{ background: getAvatarColor(conv.other_user?.full_name || '') }}
+                    >
+                      {conv.other_user?.avatar_url ? (
+                        <img src={conv.other_user.avatar_url} alt="" />
+                      ) : (
+                        <span>{getInitials(conv.other_user?.full_name || '')}</span>
+                      )}
+                    </div>
+                    {conv.other_user?.is_online && (
+                      <div
+                        className={styles.onlineDot}
+                        title={`${conv.other_user.full_name} is online`}
+                      />
                     )}
                   </div>
                   <div className={styles.convInfo}>
                     <div className={styles.convTop}>
-                      <span className={styles.convName}>{conv.other_user?.full_name}</span>
-                      <span className={styles.convTime}>{formatTime(conv.last_message_at || conv.created_at)}</span>
+                      <div className={styles.convNameRow}>
+                        <span className={styles.convName}>{conv.other_user?.full_name}</span>
+                        {isVIP(conv.other_user) && <Crown size={14} className={styles.vipIcon} />}
+                      </div>
+                      <span className={styles.convTime}>
+                        {formatTime(conv.last_message_at || conv.created_at)}
+                      </span>
                     </div>
                     <div className={styles.convBottom}>
                       <span className={styles.convPreview}>{conv.last_message_text}</span>
@@ -548,8 +657,9 @@ export default function StaffMessagesPage() {
           </div>
         </aside>
 
-        {/* RIGHT MAIN CHAT AREA */}
-        <main className={`${styles.chatMain} ${showMobileChat ? styles.chatMainVisibleMobile : ''}`}>
+        <main
+          className={`${styles.chatMain} ${showMobileChat ? styles.chatMainVisibleMobile : ''}`}
+        >
           {showNewChat ? (
             <div className={styles.newChatContainer}>
               <div className={styles.chatTopBar}>
@@ -559,23 +669,27 @@ export default function StaffMessagesPage() {
                 <h3 className={styles.chatTopTitle}>New Conversation</h3>
               </div>
               <div className={styles.newChatList}>
-                {allUsers.map(user => (
+                {allUsers.map((user) => (
                   <div
                     key={user.id}
                     className={styles.newChatUser}
                     onClick={() => startNewConversation(user.id)}
                   >
-                    <div className={styles.newChatAvatar}>
+                    <div
+                      className={styles.newChatAvatar}
+                      style={{ background: getAvatarColor(user.full_name) }}
+                    >
                       {user.avatar_url ? (
                         <img src={user.avatar_url} alt="" />
                       ) : (
-                        <div className={styles.avatarPlaceholder}>
-                          {getInitials(user.full_name)}
-                        </div>
+                        <span>{getInitials(user.full_name)}</span>
                       )}
                     </div>
                     <div>
-                      <p className={styles.newChatName}>{user.full_name}</p>
+                      <div className={styles.newChatNameRow}>
+                        <p className={styles.newChatName}>{user.full_name}</p>
+                        {isVIP(user) && <Crown size={14} className={styles.vipIcon} />}
+                      </div>
                       <p className={styles.newChatRole}>{user.role}</p>
                     </div>
                   </div>
@@ -585,10 +699,10 @@ export default function StaffMessagesPage() {
           ) : !selectedConversation ? (
             <div className={styles.emptyChat}>
               <div className={styles.emptyChatIcon}>
-                <Send size={56} />
+                <MessageCircle size={64} />
               </div>
               <h3>Select a conversation</h3>
-              <p>Choose from the list to start messaging</p>
+              <p>Choose from your existing chats or start a new one</p>
             </div>
           ) : (
             <div className={styles.activeChat}>
@@ -597,94 +711,102 @@ export default function StaffMessagesPage() {
                   <ArrowLeft size={24} />
                 </button>
                 <div className={styles.chatTopInfo}>
-                  <div className={styles.chatTopAvatar}>
-                    {selectedConvDetails?.other_user?.avatar_url ? (
-                      <img src={selectedConvDetails.other_user.avatar_url} alt="" />
-                    ) : (
-                      <div className={styles.avatarPlaceholder}>
-                        {getInitials(selectedConvDetails?.other_user?.full_name || '')}
-                      </div>
+                  <div className={styles.chatTopAvatarWrapper}>
+                    <div
+                      className={styles.chatTopAvatar}
+                      style={{
+                        background: getAvatarColor(
+                          selectedConvDetails?.other_user?.full_name || ''
+                        ),
+                      }}
+                    >
+                      {selectedConvDetails?.other_user?.avatar_url ? (
+                        <img src={selectedConvDetails.other_user.avatar_url} alt="" />
+                      ) : (
+                        <span>{getInitials(selectedConvDetails?.other_user?.full_name || '')}</span>
+                      )}
+                    </div>
+                    {selectedConvDetails?.other_user?.is_online && (
+                      <div
+                        className={styles.onlineDot}
+                        title={`${selectedConvDetails.other_user.full_name} is online`}
+                      />
                     )}
                   </div>
                   <div>
-                    <p className={styles.chatTopName}>{selectedConvDetails?.other_user?.full_name}</p>
+                    <div className={styles.chatTopNameRow}>
+                      <p className={styles.chatTopName}>
+                        {selectedConvDetails?.other_user?.full_name}
+                      </p>
+                      {isVIP(selectedConvDetails?.other_user) && (
+                        <Crown size={14} className={styles.vipIcon} />
+                      )}
+                    </div>
                     {otherUserTyping ? (
                       <p className={styles.typingText}>typing...</p>
                     ) : (
-                      <p className={styles.chatTopRole}>{selectedConvDetails?.other_user?.role}</p>
+                      <p className={styles.chatTopRole}>
+                        {selectedConvDetails?.other_user?.is_online
+                          ? 'Active now'
+                          : selectedConvDetails?.other_user?.role}
+                      </p>
                     )}
                   </div>
                 </div>
               </div>
 
               <div className={styles.messagesArea}>
-                {messages.map((msg, index) => {
-                  // 1. Calculate logic for date separators
-                  const previousMsg = index > 0 ? messages[index - 1] : null;
-                  const showDateSeparator = shouldShowDateSeparator(msg, previousMsg);
-
-                  return (
-                    // 2. Wrap everything in a Fragment so we can render two things (Date + Msg)
-                    <React.Fragment key={msg.id}>
-
-                      {/* 3. The Date Separator Header */}
-                      {showDateSeparator && (
-                        <div className={styles.dateSeparator}>
-                          <span>{formatDateSeparator(msg.created_at)}</span>
-                        </div>
-                      )}
-
-                      {/* 4. Your Existing Message Row Logic */}
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`${styles.msgRow} ${
+                      msg.sender_id === currentUserId ? styles.msgRowSent : styles.msgRowReceived
+                    }`}
+                  >
+                    {msg.sender_id !== currentUserId && (
                       <div
-                        className={`${styles.msgRow} ${msg.sender_id === currentUserId ? styles.msgRowSent : styles.msgRowReceived
-                          }`}
+                        className={styles.msgAvatar}
+                        style={{ background: getAvatarColor(msg.sender?.full_name || '') }}
                       >
-                        {msg.sender_id !== currentUserId && (
-                          <div className={styles.msgAvatar}>
-                            {msg.sender?.avatar_url ? (
-                              <img src={msg.sender.avatar_url} alt="" />
-                            ) : (
-                              <div className={styles.avatarPlaceholder}>
-                                {getInitials(msg.sender?.full_name || 'U')}
-                              </div>
-                            )}
-                          </div>
+                        {msg.sender?.avatar_url ? (
+                          <img src={msg.sender.avatar_url} alt="" />
+                        ) : (
+                          <span>{getInitials(msg.sender?.full_name || 'U')}</span>
                         )}
-                        <div className={styles.msgContent}>
-                          <div className={styles.msgBubble}>
-                            <p className={styles.msgText}>{msg.message_text}</p>
-                            <div className={styles.msgMetaInline}>
-                              <span className={styles.msgTime}>
-                                {new Date(msg.created_at).toLocaleTimeString('en-US', {
-                                  hour: 'numeric',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                              {msg.sender_id === currentUserId && (
-                                msg.read_at ? (
-                                  <CheckCheck size={16} className={styles.tickRead} />
-                                ) : (
-                                  <CheckCheck size={16} className={styles.tickSent} />
-                                )
-                              )}
-                            </div>
-                          </div>
+                      </div>
+                    )}
+                    <div className={styles.msgContent}>
+                      <div className={styles.msgBubble}>
+                        <p className={styles.msgText}>{msg.message_text}</p>
+                        <div className={styles.msgMetaInline}>
+                          <span className={styles.msgTime}>
+                            {new Date(msg.created_at).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                          {msg.sender_id === currentUserId &&
+                            (msg.read_at ? (
+                              <CheckCheck size={16} className={styles.tickRead} />
+                            ) : (
+                              <CheckCheck size={16} className={styles.tickSent} />
+                            ))}
                         </div>
                       </div>
-                    </React.Fragment>
-                  );
-                })}
+                    </div>
+                  </div>
+                ))}
 
-                {/* Typing indicator stays down here, unchanged */}
                 {otherUserTyping && (
                   <div className={`${styles.msgRow} ${styles.msgRowReceived}`}>
-                    {/* ... typing logic ... */}
                     <div className={styles.msgAvatar}>
                       <div className={styles.avatarPlaceholder}>...</div>
                     </div>
                     <div className={styles.typingBubble}>
                       <div className={styles.typingDots}>
-                        <span></span><span></span><span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
                       </div>
                     </div>
                   </div>

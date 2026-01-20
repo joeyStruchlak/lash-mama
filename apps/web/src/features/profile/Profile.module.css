@@ -31,19 +31,19 @@
 
 /* Header */
 .header {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 700;
   color: hsl(0 0% 17%);
   margin: 0 0 6px 0;
 }
 
 .subtitle {
-  font-size: 15px;
+  font-size: 14px;
   color: hsl(0 0% 55%);
   margin: 0;
 }
@@ -51,18 +51,17 @@
 /* Main Card */
 .card {
   background: white;
-  border-radius: 24px;
-  padding: 48px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-  border: 1px solid hsl(40 20% 91%);
-  overflow: hidden; /* Prevent content from overflowing card */
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid hsl(40 20% 93%);
 }
 
 /* Top Section */
 .topSection {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 /* Avatar Section */
@@ -71,15 +70,17 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid hsl(40 20% 93%);
 }
 
 .avatarWrapper {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .avatar {
@@ -91,10 +92,13 @@
 .avatarPlaceholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, hsl(40 100% 98%) 0%, hsl(40 100% 95%) 100%);
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 48px;
+  font-weight: 700;
+  color: white;
 }
 
 .uploadingOverlay {
@@ -111,10 +115,10 @@
 }
 
 .uploadSpinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid white;
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -127,11 +131,11 @@
   background: white;
   border: 2px solid hsl(37 42% 72%);
   color: hsl(37 42% 62%);
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .changePhotoBtn:hover {
@@ -141,12 +145,15 @@
   box-shadow: 0 4px 12px hsl(37 42% 62% / 0.3);
 }
 
+.changePhotoBtn:active {
+  transform: translateY(0);
+}
+
 /* Form Section */
 .formSection {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  min-width: 0; /* Allow form to shrink */
+  gap: 24px;
 }
 
 .formRow {
@@ -158,8 +165,14 @@
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 0; /* Prevent overflow */
+  gap: 10px;
+}
+
+/* Label Row - NEW */
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .label {
@@ -169,103 +182,157 @@
   font-size: 13px;
   font-weight: 600;
   color: hsl(0 0% 30%);
-  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* Input Wrapper - FIXED FOR OVERFLOW */
-.inputWrapper {
-  position: relative;
+/* Edit Button - IMPROVED */
+.editButton {
   display: flex;
-  align-items: stretch;
-  gap: 8px;
-  width: 100%;
-  max-width: 100%; /* Prevent overflow */
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid hsl(37 42% 85%);
+  color: hsl(37 42% 62%);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  background: hsl(37 42% 96%);
+  border-color: hsl(37 42% 72%);
+  transform: translateY(-1px);
+}
+
+.editButton:active {
+  transform: translateY(0);
+}
+
+/* Input Container - NEW */
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .input {
-  flex: 1;
-  min-width: 0; /* Critical: allows input to shrink */
+  width: 100%;
   padding: 12px 16px;
   border: 2px solid hsl(40 20% 91%);
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 15px;
   color: hsl(0 0% 17%);
   transition: all 0.2s ease;
+  background: hsl(40 100% 99%);
 }
 
 .input:focus {
   outline: none;
   border-color: hsl(37 42% 62%);
   box-shadow: 0 0 0 4px hsl(37 42% 62% / 0.1);
+  background: white;
+}
+
+.inputEditing {
+  border-color: hsl(37 42% 72%);
+  background: white;
 }
 
 .input:disabled {
   background: hsl(40 100% 98%);
   color: hsl(0 0% 55%);
+  cursor: not-allowed;
 }
 
 .inputDisabled {
   background: hsl(40 100% 98%);
   color: hsl(0 0% 55%);
   cursor: not-allowed;
+  border-color: hsl(40 20% 93%);
 }
 
 .textarea {
   width: 100%;
-  min-width: 0; /* Critical: prevents textarea overflow */
   padding: 12px 16px;
   border: 2px solid hsl(40 20% 91%);
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 15px;
   color: hsl(0 0% 17%);
   font-family: inherit;
   resize: vertical;
   transition: all 0.2s ease;
   line-height: 1.6;
-  box-sizing: border-box; /* Include padding in width calculation */
+  background: hsl(40 100% 99%);
 }
 
 .textarea:focus {
   outline: none;
   border-color: hsl(37 42% 62%);
   box-shadow: 0 0 0 4px hsl(37 42% 62% / 0.1);
+  background: white;
+}
+
+.textareaEditing {
+  border-color: hsl(37 42% 72%);
+  background: white;
 }
 
 .textarea:disabled {
   background: hsl(40 100% 98%);
   color: hsl(0 0% 55%);
+  cursor: not-allowed;
 }
 
-/* Edit Icons - FIXED TO STAY IN PLACE */
-.iconGroup {
+/* Edit Actions - IMPROVED */
+.editActions {
   display: flex;
-  gap: 6px;
-  flex-shrink: 0; /* Don't allow icons to shrink */
-  align-items: center;
+  gap: 10px;
 }
 
-.iconBtn {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0; /* Maintain exact button size */
+.cancelBtn,
+.saveBtn {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
-  border: 2px solid hsl(40 20% 91%);
+  gap: 6px;
+  padding: 10px 16px;
   border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: hsl(37 42% 62%);
 }
 
-.iconBtn:hover {
-  border-color: hsl(37 42% 62%);
-  background: hsl(40 100% 98%);
+.cancelBtn {
+  background: white;
+  border: 2px solid hsl(0 0% 88%);
+  color: hsl(0 0% 40%);
+}
+
+.cancelBtn:hover {
+  background: hsl(0 0% 96%);
+  border-color: hsl(0 0% 75%);
   transform: translateY(-1px);
 }
 
-.iconBtn:active {
+.saveBtn {
+  background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
+  border: 2px solid hsl(37 42% 62%);
+  color: white;
+}
+
+.saveBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px hsl(37 42% 62% / 0.3);
+}
+
+.cancelBtn:active,
+.saveBtn:active {
   transform: translateY(0);
 }
 
@@ -293,9 +360,9 @@
 
 .modalContent {
   background: white;
-  border-radius: 24px;
-  padding: 48px 40px 40px;
-  max-width: 440px;
+  border-radius: 20px;
+  padding: 40px 32px 32px;
+  max-width: 400px;
   width: 90%;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -314,9 +381,9 @@
 }
 
 .successIcon {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 24px;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
   border-radius: 50%;
   background: linear-gradient(135deg, hsl(142 76% 95%) 0%, hsl(142 76% 88%) 100%);
   display: flex;
@@ -328,17 +395,17 @@
 
 .modalTitle {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   color: hsl(142 76% 36%);
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
 }
 
 .modalText {
-  font-size: 15px;
+  font-size: 14px;
   color: hsl(0 0% 45%);
   line-height: 1.6;
-  margin: 0 0 28px 0;
+  margin: 0 0 24px 0;
 }
 
 .modalText strong {
@@ -348,11 +415,11 @@
 
 .modalButton {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   background: linear-gradient(135deg, hsl(37 42% 72%) 0%, hsl(37 42% 62%) 100%);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -365,50 +432,122 @@
   box-shadow: 0 6px 16px hsl(37 42% 62% / 0.4);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .topSection {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  
-  .avatarSection {
-    align-items: center;
-  }
-  
-  .formRow {
-    grid-template-columns: 1fr;
-  }
-  
-  .card {
-    padding: 32px 24px;
-  }
+.modalButton:active {
+  transform: translateY(0);
 }
 
-@media (max-width: 640px) {
+/* Responsive */
+@media (max-width: 768px) {
+  .profileContainer {
+    padding: 0 16px 32px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
   .title {
     font-size: 28px;
   }
-  
-  .avatarWrapper {
-    width: 140px;
-    height: 140px;
+
+  .subtitle {
+    font-size: 13px;
   }
-  
+
   .card {
-    padding: 24px 16px;
+    padding: 24px 20px;
+    border-radius: 16px;
   }
-  
-  .modalContent {
-    padding: 40px 24px 24px;
+
+  .topSection {
+    gap: 24px;
   }
-  
-  .successIcon {
-    width: 80px;
-    height: 80px;
+
+  .avatarSection {
+    padding-bottom: 20px;
   }
-  
-  .modalTitle {
+
+  .avatarWrapper {
+    width: 100px;
+    height: 100px;
+  }
+
+  .avatarPlaceholder {
+    font-size: 40px;
+  }
+
+  .changePhotoBtn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .formSection {
+    gap: 20px;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .label {
+    font-size: 12px;
+  }
+
+  .input,
+  .textarea {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .editButton {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .cancelBtn,
+  .saveBtn {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileContainer {
+    padding: 0 12px 24px;
+  }
+
+  .title {
     font-size: 24px;
+  }
+
+  .card {
+    padding: 20px 16px;
+  }
+
+  .avatarWrapper {
+    width: 90px;
+    height: 90px;
+  }
+
+  .avatarPlaceholder {
+    font-size: 36px;
+  }
+
+  .modalContent {
+    padding: 32px 24px 24px;
+  }
+
+  .successIcon {
+    width: 70px;
+    height: 70px;
+  }
+
+  .modalTitle {
+    font-size: 22px;
+  }
+
+  .modalText {
+    font-size: 13px;
   }
 }

@@ -33,47 +33,67 @@ export function EditableField({
 }: EditableFieldProps) {
   const isTextarea = type === 'textarea';
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isTextarea && isEditing) {
+      e.preventDefault();
+      onSave();
+    } else if (e.key === 'Escape' && isEditing) {
+      e.preventDefault();
+      onCancel();
+    }
+  };
+
   return (
     <div className={styles.formGroup}>
-      <label className={styles.label}>
-        {icon}
-        {label}
-      </label>
-      <div className={styles.inputWrapper}>
+      <div className={styles.labelRow}>
+        <label className={styles.label}>
+          {icon}
+          {label}
+        </label>
+        {!disabled && !isEditing && (
+          <button className={styles.editButton} onClick={onEdit} type="button">
+            <Edit2 size={14} />
+            <span>Edit</span>
+          </button>
+        )}
+      </div>
+
+      <div className={styles.inputContainer}>
         {isTextarea ? (
           <textarea
-            className={styles.textarea}
+            className={`${styles.textarea} ${isEditing ? styles.textareaEditing : ''}`}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            rows={3}
+            onKeyDown={handleKeyDown}
+            rows={4}
             disabled={!isEditing || disabled}
+            placeholder={disabled ? '' : 'Enter your bio...'}
           />
         ) : (
           <input
             type={type}
-            className={`${styles.input} ${disabled ? styles.inputDisabled : ''}`}
+            className={`${styles.input} ${disabled ? styles.inputDisabled : ''} ${
+              isEditing ? styles.inputEditing : ''
+            }`}
             value={value}
             onChange={(e) => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
             disabled={!isEditing || disabled}
+            placeholder={disabled ? '' : `Enter ${label.toLowerCase()}...`}
           />
         )}
-        {!disabled && (
-          <>
-            {isEditing ? (
-              <div className={styles.iconGroup}>
-                <button className={styles.iconBtn} onClick={onSave}>
-                  <Check size={16} />
-                </button>
-                <button className={styles.iconBtn} onClick={onCancel}>
-                  <X size={16} />
-                </button>
-              </div>
-            ) : (
-              <button className={styles.iconBtn} onClick={onEdit}>
-                <Edit2 size={14} />
-              </button>
-            )}
-          </>
+
+        {isEditing && (
+          <div className={styles.editActions}>
+            <button className={styles.cancelBtn} onClick={onCancel} type="button">
+              <X size={16} />
+              Cancel
+            </button>
+            <button className={styles.saveBtn} onClick={onSave} type="button">
+              <Check size={16} />
+              Save Changes
+            </button>
+          </div>
         )}
       </div>
     </div>
