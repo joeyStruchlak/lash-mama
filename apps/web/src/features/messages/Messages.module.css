@@ -513,31 +513,43 @@
   position: relative;
 }
 
+/* Active Chat */
+.activeChat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  overflow: hidden; /* Add this to contain the fixed background */
+}
+
 .messagesArea {
   flex: 1;
   padding: 20px;
-  padding-bottom: 80px; /* Extra space at bottom to prevent cut-off */
+  padding-bottom: 80px;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: hsl(0 0% 98%);
   scroll-behavior: smooth;
   position: relative;
+  background: transparent; /* Make transparent so wallpaper shows through */
 }
 
-.messagesArea::before {
+/* Fixed wallpaper - positioned relative to .activeChat */
+.activeChat::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: 72px; /* Height of chat header */
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: 80px; /* Height of input bar */
   background-image: url('https://gcqthaivnyleflvmmxqv.supabase.co/storage/v1/object/public/chat-wallpapers/wallpaper.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  background-color: hsl(0 0% 98%);
   opacity: 0.15;
   pointer-events: none;
   z-index: 0;
